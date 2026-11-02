@@ -1,0 +1,727 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>The Known World</title>
+<meta name="description" content="A dark world that lights up as travellers wrote it down: how much of the Earth Europe, the Islamic world, China and Polynesia had recorded, from the Bronze Age to 1960, from 681 journeys.">
+<meta property="og:title" content="The Known World">
+<meta property="og:description" content="How much of the Earth each tradition had written about, from the Bronze Age to 1960. By 1492 Europe's recorded world covered 20% of the land; by 1960, in this gazetteer, 80%.">
+<meta property="og:image" content="https://maps.tristanhotham.com/known-world/header.png">
+<meta property="og:url" content="https://maps.tristanhotham.com/known-world/">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800;9..144,900&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+/* Paper and ink for the page; the map keeps the palette of the old exploration animations: cream land, blue sea, black unknown. */
+:root{
+  --bg:#F7F2E7; --panel:#EEE6D4; --fg:#22201C; --muted:#68625A; --rule:#E0D6C1; --card:#FFFCF4; --border:#CEC2A8;
+  --red:#B23A2A; --eu:#B23A2A; --is:#2E8A6E; --ch:#B07A12; --po:#2F5FA7;
+  --mland:#ece4d4; --msea:#4f7fae; --mdark:#1b1b1b;
+  --display:"Fraunces",Georgia,"Times New Roman",serif;
+  --body:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#15130F; --panel:#1F1C17; --fg:#EEE8DC; --muted:#AAA294; --rule:#332F27; --card:#1A1813; --border:#4A443A;
+  --red:#F07B66; --eu:#F07B66; --is:#5CC49F; --ch:#E8B54F; --po:#7EA7E8; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#15130F; --panel:#1F1C17; --fg:#EEE8DC; --muted:#AAA294; --rule:#332F27; --card:#1A1813; --border:#4A443A;
+  --red:#F07B66; --eu:#F07B66; --is:#5CC49F; --ch:#E8B54F; --po:#7EA7E8; color-scheme:dark}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:400 18px/1.62 var(--body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));overflow-x:hidden}
+.wrap{max-width:700px;margin:0 auto;padding-block:28px 64px}
+.wrap .bleed{width:min(1240px,calc(100vw - 32px));margin-left:calc((100% - min(1240px,100vw - 32px))/2);margin-right:0}
+a{color:inherit;text-decoration-color:var(--red);text-underline-offset:3px}
+.kicker{font:500 12px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.kicker b{background:var(--red);color:#fff;padding:5px 8px;font-weight:500}
+header.hero{border-bottom:6px double var(--fg);padding-bottom:22px;margin-top:18px}
+h1{font:900 clamp(46px,11.5vw,88px)/.9 var(--display);letter-spacing:-.02em;margin:0;text-wrap:balance}
+h1 span{color:var(--red)}
+.dek{font-size:21px;line-height:1.42;margin:14px 0 0;max-width:60ch}
+.byline{font:400 13px/1.4 var(--mono);color:var(--muted);margin-top:14px}
+h2{font:800 34px/1.04 var(--display);letter-spacing:-.01em;margin:54px 0 10px;text-wrap:balance}
+h2 .n{font:500 13px/1 var(--mono);color:var(--red);display:block;letter-spacing:.1em;margin-bottom:10px}
+p{margin:0 0 16px}
+.lede::first-letter{font:900 72px/.8 var(--display);float:left;margin:6px 10px 0 0;color:var(--red)}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);margin:26px 0 8px}
+.stats div{background:var(--card);padding:14px 12px}
+.stats b{display:block;font:900 clamp(22px,4.4vw,32px)/1 var(--display);letter-spacing:-.01em}
+.stats b.a{color:var(--red)} .stats b.b{color:var(--po)} .stats b.c{color:var(--is)} .stats b.d{color:var(--ch)}
+.stats span{font:400 12px/1.35 var(--mono);color:var(--muted);display:block;margin-top:6px}
+@media (max-width:600px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.figure{margin:26px 0 30px}
+.fig-h{font:600 19px/1.25 var(--display);margin:0 0 4px}
+.fig-sub{font:400 13px/1.45 var(--mono);color:var(--muted);margin:0 0 12px}
+.src{font:400 12px/1.45 var(--mono);color:var(--muted);margin-top:10px}
+.chart{width:100%;position:relative}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+svg text{font-family:var(--mono);fill:var(--fg)}
+.tip{position:absolute;pointer-events:none;background:var(--fg);color:var(--bg);font:400 12px/1.45 var(--mono);padding:8px 10px;border-radius:3px;max-width:300px;z-index:1000;transform:translate(-50%,calc(-100% - 12px));display:none}
+.btn{font:500 12px/1 var(--mono);background:var(--card);color:var(--fg);border:1px solid var(--border);border-radius:3px;padding:8px 10px;cursor:pointer;min-height:36px}
+.btn[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.btn:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+.pull{font:600 26px/1.25 var(--display);border-left:6px solid var(--red);padding:4px 0 4px 18px;margin:30px 0}
+.note{background:var(--panel);border:1px solid var(--rule);padding:14px 16px;font-size:16px;margin:22px 0}
+table.tbl{width:100%;border-collapse:collapse;font:400 13px/1.4 var(--mono)}
+table.tbl th{font:500 11px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:left;padding:6px 6px 6px 0;border-bottom:2px solid var(--fg);white-space:nowrap;background:var(--card)}
+table.tbl td{padding:6px 6px 6px 0;border-bottom:1px solid var(--rule);vertical-align:top}
+table.tbl td.r,table.tbl th.r{text-align:right;white-space:nowrap}
+table.tbl tr[data-j]{cursor:pointer}
+table.tbl tr[data-j]:hover td{background:var(--panel)}
+.tablebox{max-height:520px;overflow:auto;border:1px solid var(--border);background:var(--card);padding:0 10px}
+details{margin:14px 0}
+summary{font:500 13px/1.4 var(--mono);cursor:pointer;color:var(--fg);padding:8px 0}
+.cta{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}
+.cta a{font:500 13px/1 var(--mono);text-decoration:none;border:1px solid var(--fg);padding:11px 14px;border-radius:3px}
+.cta a.p{background:var(--red);border-color:var(--red);color:#fff}
+footer{border-top:6px double var(--fg);margin-top:56px;padding-top:16px;font:400 13px/1.55 var(--mono);color:var(--muted)}
+footer p{margin:0 0 10px}
+.theme{position:fixed;right:12px;bottom:12px;z-index:1002}
+[hidden]{display:none!important}
+.legend{display:flex;gap:6px 14px;flex-wrap:wrap;font:400 12px/1.3 var(--mono);color:var(--muted);margin-top:8px;align-items:center}
+.legend span{display:inline-flex;align-items:center}
+.legend i{display:inline-block;width:12px;height:12px;margin-right:6px;border-radius:2px;border:1px solid rgba(0,0,0,.15)}
+.legend i.ln{height:0;border:0;border-top:3px solid;width:18px;border-radius:0}
+
+/* ---------- the stage: header bars, map, controls ---------- */
+#stage{background:#111;color:#f3eee4;border-radius:3px;overflow:hidden;position:relative;display:flex;flex-direction:column;margin-top:14px}
+.bar{background:#c0392b;background:linear-gradient(#c8402f,#a8301f);color:#fff;font:800 clamp(15px,2.4vw,22px)/1.15 var(--display);padding:9px 14px;display:flex;justify-content:space-between;gap:10px;align-items:center}
+.bar .t{min-width:0}
+.bar .t small{display:block;font:400 11px/1.2 var(--mono);opacity:.85;letter-spacing:.04em;margin-top:2px}
+.hud{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 16px;align-items:center;padding:10px 14px 10px;background:#141414;border-bottom:1px solid #2a2a2a}
+.year{font:900 clamp(34px,6.6vw,58px)/1 var(--display);letter-spacing:-.02em;grid-row:1/3;min-width:4.2ch;font-variant-numeric:tabular-nums;color:#fff}
+.year small{font:500 .38em/1 var(--mono);letter-spacing:.06em;margin-left:4px;color:#d8cfbf}
+.meter{display:grid;grid-template-columns:clamp(96px,22vw,170px) minmax(0,1fr) 56px;gap:8px;align-items:center;font:500 12px/1.1 var(--mono);color:#e7e0d2}
+.meter .track{height:12px;background:#2c2c2c;border-radius:2px;overflow:hidden;position:relative}
+.meter .fill{position:absolute;inset:0 auto 0 0;width:0;background:#ece4d4;transition:width .12s linear}
+.meter.s .fill{background:#4f7fae}
+.meter b{font-weight:500;text-align:right;font-variant-numeric:tabular-nums}
+#map{height:min(66vh,620px);min-height:340px;background:#1b1b1b;flex:1 1 auto}
+@media (max-width:700px){#map{height:min(58vh,480px)}}
+.ctl{background:#141414;padding:10px 12px 12px;border-top:1px solid #2a2a2a;display:flex;flex-direction:column;gap:9px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.row.sl{flex-wrap:nowrap}
+.cbtn{font:500 12px/1 var(--mono);background:#232323;color:#f3eee4;border:1px solid #3a3a3a;border-radius:3px;padding:8px 10px;cursor:pointer;min-height:36px;white-space:nowrap}
+.cbtn[aria-pressed="true"]{background:#f3eee4;color:#111;border-color:#f3eee4}
+.cbtn.play{min-width:44px;font-size:15px}
+.cbtn:focus-visible{outline:2px solid #ff8a73;outline-offset:2px}
+input[type=range].time{flex:1;min-width:0;accent-color:#c8402f;height:30px}
+.lab{font:500 10.5px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:#a49c8e;flex:0 0 auto}
+.scrollrow{display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:thin;padding-bottom:2px;max-width:100%}
+.scrollrow .cbtn{flex:0 0 auto}
+.vpdot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:0}
+.searchbox{position:relative;flex:1 1 220px;min-width:0}
+.searchbox input{font:400 14px/1 var(--mono);background:#232323;color:#f3eee4;border:1px solid #3a3a3a;border-radius:3px;padding:9px 10px;min-height:38px;width:100%}
+.suggest{position:absolute;left:0;right:0;bottom:100%;margin:0 0 2px;padding:0;list-style:none;background:#232323;border:1px solid #3a3a3a;z-index:1003;font:400 13px/1.3 var(--mono);display:none;max-height:300px;overflow:auto;color:#f3eee4}
+.suggest li{padding:8px 10px;cursor:pointer;border-bottom:1px solid #333}
+.suggest li span{color:#a49c8e}
+.suggest li[aria-selected="true"],.suggest li:hover{background:#333}
+.moment{font:400 13px/1.45 var(--mono);color:#e7e0d2;min-height:2.9em}
+.moment b{color:#fff;font-weight:500}
+#stage.mfs-fake,#stage:fullscreen{display:flex;flex-direction:column}
+#stage.mfs-fake #map,#stage:fullscreen #map{height:auto;flex:1 1 auto;min-height:0}
+#stage.mfs-fake .moment,#stage:fullscreen .moment{display:none}
+#stage .mfs-btn{top:auto;bottom:auto}
+.side{background:var(--card);border:1px solid var(--border);padding:12px 14px 10px;font:400 13px/1.5 var(--mono);margin-top:12px;min-height:90px}
+.side .big{font:800 22px/1.15 var(--display);margin:2px 0 6px}
+.side .sub{color:var(--muted);font-size:12px;margin:0 0 6px}
+.side table{border-collapse:collapse;margin:6px 0}
+.side td{padding:3px 12px 3px 0;vertical-align:top}
+.side td:first-child{white-space:nowrap}
+.flag{display:inline-block;font:500 10.5px/1 var(--mono);padding:3px 6px;border-radius:2px;border:1px solid currentColor;margin-left:4px;vertical-align:1px;white-space:nowrap}
+.flag.ok{color:#2E8A6E}.flag.rd{color:#68625A}.flag.nc{color:#B07A12}.flag.us{color:#B23A2A}
+/* leaflet */
+.leaflet-container{font:400 12px/1.4 var(--mono);background:#1b1b1b}
+.leaflet-control-attribution{background:rgba(20,20,20,.75)!important;color:#bbb}
+.leaflet-control-attribution a{color:#eee}
+.leaflet-bar a{background:#232323;color:#f3eee4;border-bottom-color:#3a3a3a}
+.leaflet-bar a:hover{background:#333;color:#fff}
+.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:#FFFCF4;color:#22201C}
+.leaflet-popup-content{font:400 12.5px/1.45 var(--mono);margin:12px 14px;max-width:290px}
+.leaflet-popup-content .pt{font:800 17px/1.15 var(--display);margin:0 0 4px}
+.leaflet-popup-content .ps{color:#68625A;margin:0 0 6px}
+.leaflet-popup-content p{margin:0 0 6px}
+.lyrWrap{position:absolute;top:10px;left:54px;z-index:1000}
+.lyrBtn{background:#232323;color:#f3eee4;border:1px solid #3a3a3a;border-radius:3px;font:600 12px/1 var(--mono);padding:9px 10px;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.4)}
+.lyrBtn[aria-expanded="true"]{background:#f3eee4;color:#111}
+.lyrPanel{background:#1e1e1e;color:#f3eee4;border:1px solid #3a3a3a;border-radius:3px;padding:10px 12px 8px;margin-top:6px;width:240px;box-shadow:0 2px 10px rgba(0,0,0,.5);font:400 12px/1.3 var(--mono);max-height:min(56vh,440px);overflow:auto}
+.lyrPanel .r{margin:0 0 9px}
+.lyrPanel label{display:flex;gap:6px;align-items:center;cursor:pointer;font-weight:600}
+.lyrPanel input[type=range]{width:100%;accent-color:#c8402f}
+.lyrPanel .sub{color:#a49c8e;font-size:11px;margin-top:3px}
+.lyrPanel .hd{font:500 10.5px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:#a49c8e;margin:10px 0 7px;border-top:1px solid #333;padding-top:9px}
+.lyrPanel .hd:first-child{border-top:0;padding-top:0;margin-top:0}
+.plabel{background:none;border:0;box-shadow:none;color:#fff;font:500 11px/1 var(--mono);text-shadow:0 0 3px #000,0 0 3px #000;padding:0;white-space:nowrap}
+.plabel::before{display:none}
+.loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:400 13px var(--mono);color:#bbb;z-index:500;pointer-events:none}
+.legend.dark{color:#cfc6b6;margin:0}
+.legend.dark i{border-color:rgba(255,255,255,.25)}
+.dl{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0 0;font:400 12px/1.4 var(--mono)}
+@media print{.theme,.ctl{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="kicker"><b>Data study</b><span>History</span><span>681 journeys, 2200 BC to 1960</span></div>
+<header class="hero">
+  <h1>The <span>Known</span> World</h1>
+  <p class="dek">A dark world that lights up as travellers wrote it down. How much of the Earth each tradition had recorded, from the Bronze Age to 1960, and how that depended on who was doing the looking.</p>
+</header>
+<div class="byline">Dr Tristan Hotham · Independent researcher · 2026 · Sources: a gazetteer of 681 journeys compiled for this study from Wikipedia and other published accounts; Natural Earth</div>
+
+<div class="stats">
+  <div><b class="a">20%</b><span>of the world's land within reach of Europe's written accounts in 1492</span></div>
+  <div><b class="b">1841</b><span>the year half the world's land was recorded for Europe, by journeys, surveys and settlement</span></div>
+  <div><b class="c">80%</b><span>of the land recorded by 1960; from journeys alone, 64%</span></div>
+  <div><b class="d">1281</b><span>Polynesians reach Aotearoa, New Zealand; Europe's first sight was 1642</span></div>
+</div>
+
+<p class="lede">There is a famous animation of world exploration from Europe's point of view. The world starts black, and as each ship and caravan sets out, the places it reached turn from dark to light. It is mesmerising, and it has two problems. It leaves Europe's own neighbours dark for centuries after Greek and Roman writers had described them, and it presents one tradition's point of view as if it were the only one.</p>
+<p>This is my attempt at an honest version. I compiled 681 journeys, from Austronesian voyages out of Taiwan around 2200 BC to the last Antarctic and Arabian crossings of the 1950s, each with a dated route. A place lights up when a journey whose account reached its readers passed close enough to describe it. Europe's world starts from the Bronze Age Aegean, not from nothing. Because much of the world was mapped not by expeditions but by surveyors and settlers, Europe's map also has a second layer: 52 regions lit from the year their systematic survey was published or settlement became general, from the Mitchell map of the American colonies to the aerial survey of northern Canada. You can switch that layer off, and you can switch the point of view to the Islamic world, China or Polynesia and watch a different world light up.</p>
+<div class="note"><b>Every place on this map was known to the people who lived there.</b> Dark here means only that no account in my gazetteer had yet carried it into the written record of the chosen tradition. Nearly every traveller relied on local guides, pilots and interpreters, and I name some below.</div>
+
+<h2><span class="n">01 · The map</span>Watch the world light up</h2>
+<p>Press play, drag the slider or jump to a moment. The time scale is uneven: the ancient centuries pass quickly and the years after 1400 slowly. Click a route for its story, or anywhere on the map to see who first recorded it and when.</p>
+<div class="bleed">
+<div id="stage" data-fullscreen-map>
+  <div class="bar"><div class="t" id="title">The world as recorded for Europe<small id="subtitle">Land and sea within reach of written accounts that reached European readers</small></div></div>
+  <div class="hud">
+    <div class="year" id="year">1400</div>
+    <div class="meter"><span>Land known</span><div class="track"><div class="fill" id="fl"></div></div><b id="pl">0%</b></div>
+    <div class="meter s"><span>Earth's surface known</span><div class="track"><div class="fill" id="fs"></div></div><b id="ps">0%</b></div>
+  </div>
+  <div id="map" role="application" aria-label="World map lit by recorded journeys up to the chosen year"><div class="loading" id="loading">Loading the world...</div></div>
+  <div class="ctl">
+    <div class="row sl"><button class="cbtn play" id="play" aria-label="Play">&#9654;</button><input type="range" class="time" id="slider" min="0" max="1000" step="1" value="0" aria-label="Year"><button class="cbtn" id="speed" aria-label="Playback speed">1×</button></div>
+    <div class="row"><span class="lab">Point of view</span><div class="scrollrow" id="vpRow"></div></div>
+    <div class="row" id="layerRow"><span class="lab">Europe counts</span><div class="scrollrow"><button class="cbtn" data-s="1" aria-pressed="true">Journeys plus surveys and settlement</button><button class="cbtn" data-s="0" aria-pressed="false">Journeys only</button></div></div>
+    <div class="row"><span class="lab">Jump to</span><div class="scrollrow" id="momRow"></div></div>
+    <div class="moment" id="moment" aria-live="polite"></div>
+    <div class="row"><div class="searchbox"><input type="search" id="q" placeholder="Search a place (Timbuktu, Hawaii, Lhasa...)" aria-label="Search a place" autocomplete="off"><ul class="suggest" id="sug" role="listbox"></ul></div></div>
+    <div class="legend dark" id="legend"></div>
+  </div>
+</div>
+<div class="side" id="side" aria-live="polite"><div class="sub">Click the map or search for a place to see when it was first recorded from each point of view.</div></div>
+<div class="dl">Video: <a href="release/video/known-world_1920x1080.mp4">landscape (1920 x 1080)</a><a href="release/video/known-world_1080x1920.mp4">vertical (1080 x 1920)</a></div>
+<p class="src">Each grid cell (an equal-area hexagon of about 1,770 km²) lights up in the year the nearest point of a route passed within reach: 150 km of open sea and 40 km of coast for a ship, 120 km either side of a land, river or sledge route, 150 km for a flight, 250 km around the points of a starting world. Small enclosed pockets fill in. For Europe, a survey and settlement layer lights whole regions from the year they were systematically mapped or settled (switch it off for journeys alone). Knowledge flagged as lost (Vinland, Norse Greenland, the Phoenician voyage round Africa) goes dark again unless another journey covers it. Routes drawn as they happen, coloured by century. Base map, borders and names: Natural Earth; optional relief tiles © Esri.</p>
+</div>
+
+<h2><span class="n">02 · The curve</span>A slow start and a long nineteenth century</h2>
+<p>For Europe, the first big step is Ptolemy. His Geography, written around AD 150, sums up what the Roman world knew, from Ireland to the edge of China, and on its own lifts Europe's recorded world from 7% to 15% of the land. Then, for more than a thousand years, very little: by 1400 the figure is 20%. In 1492 it is 20% of the land and 11% of the Earth's surface.</p>
+<p>The ocean voyages change the sea first. Europe's known share of the Earth's surface passes half in 1809; the land takes until 1841, and three quarters of it until 1936. The nineteenth century adds the most, 23.0% of the world's land, as the crossings of Africa, Australia and Central Asia coincided with the surveys of India, the American West and the prairies; the fastest single decade after 1400 is the 1870s (5.9%). From journeys alone the curve is lower and flatter at the end: half the land by 1861 and 64% in 1960, against 80% with surveys and settlement.</p>
+<div class="figure"><p class="fig-h">Share of the world known, by point of view</p><p class="fig-sub">Share of the world's land known to each tradition by year; for Polynesia, whose world was mostly ocean, the share of the Earth's whole surface. The dashed red line is Europe from journeys alone. The time axis is uneven, like the slider. Hover the chart.</p><div class="chart" id="curve"></div><div class="legend" id="curveLegend"></div></div>
+<div class="pull">In 1492 Europe's recorded world covered 20% of the land. By 1800, 44%; by 1900, 67%.</div>
+
+<h2><span class="n">03 · Who was looking</span>Four worlds, not one</h2>
+<p>Switch the point of view and the map changes. The Islamic world's written geography, from the Arab conquests through al-Masudi, al-Biruni, al-Idrisi and Ibn Battuta, covers 17% of the land by 1400, from al-Andalus to China and down the African coast to Sofala. China's, from Zhang Qian's mission to the west in 138 BC to Zheng He's fleets, reaches 12% by 1492. Polynesian and wider Austronesian voyaging, dated here by archaeology rather than writing, lit far more ocean than land: 3.2% of the Earth's surface by 1400, but only 0.3% of its land.</p>
+<p>In this gazetteer Europe, starting from the Aegean and with the Greek and Roman geographers behind it, leads on land from 599 BC onwards and is never behind the Islamic world. That lead is partly a matter of definition: Ptolemy's Geography is counted as one starting world for Europe, and in the confirmed-only check below, where entries whose dates could not be confirmed are dropped, the Islamic world leads until 1535.</p>
+<p>Much was known elsewhere first. Of the area China's travellers recorded, 56% was lit for China before it was for Europe, a median 616 years earlier, mostly within China itself, Mongolia and Russia. Polynesians settled Hawaii around 1219 and Cook arrived in 1778; Rapa Nui around 1250, and Europe's first sight was 1722; Aotearoa around 1281, against Tasman in 1642. Chinese records describe Japan from the third century, Europe's from 1549.</p>
+<div class="figure"><p class="fig-h">Known to another tradition before Europe</p><p class="fig-sub">Area lit for each point of view before it was lit for Europe (or never lit for Europe), million km².</p><div class="chart" id="beforeChart"></div></div>
+
+<h2><span class="n">04 · Big journeys</span>The voyages that lit the most</h2>
+<p>Measured by the new area each journey was the first to light for Europe, the biggest are ocean voyages: the second leg of Cook's second voyage, 1773 to 1775, round the high southern latitudes, lit 8.7 million km²; Magellan's crossing of the Pacific 6.9 million. On land, where a route lights a strip about 240 km wide, the biggest are long journeys across unrecorded country: John C. Fremont in 1843, Agents of Maes Titianus around AD 100, and Daniel Gottlieb Messerschmidt across Siberia in 1719.</p>
+<div class="figure"><p class="fig-h">The journeys that lit the most for Europe</p><p class="fig-sub">New area first lit by each journey (sea and land, and land only), excluding starting worlds. Click a row to see it on the map.</p><div class="tablebox"><table class="tbl" id="bigTable"></table></div></div>
+
+<h2><span class="n">05 · The last blanks</span>Where the map stayed dark</h2>
+<p>By the halfway measure, the last large countries to be recorded for Europe are Papua New Guinea (half its land lit by 1933), Canada (1921, its north mapped from the air) and Namibia (1910). After 1900, 19.7 million km² of land was still being lit for the first time, most of it in northern Canada, Antarctica, the Brazilian interior and Alaska.</p>
+<p>The map never goes fully light, and that needs saying plainly. In 1960 29.4 million km² of land is still dark, 10.4 million of it in Antarctica. Much of the rest is not land nobody had described but land that neither a journey in my gazetteer nor my deliberately coarse survey layer reaches: parts of the Sahara and the Sahel, Cameroon and the Central African Republic, the outer islands of Indonesia, the Amazon, northern Siberia and the Greenland ice. Read the late years as a lower bound.</p>
+
+<h2><span class="n">06 · The guides</span>Nobody travelled alone</h2>
+<p>72 of the journeys name a local guide, pilot or interpreter in their notes, and many more relied on one unnamed. A few: the Gedrosian pilot Hydraces, who guided Nearchus's fleet along the coast of Pakistan; the Indian sailor who showed Eudoxus the monsoon route; Ma Huan, Zheng He's Muslim interpreter; the Gujarati pilot who took da Gama from Malindi to Calicut; Malintzin, Cortes's interpreter; Enrique, the Malay interpreter of Magellan's fleet; Tupaia, the Tahitian navigator who sailed with Cook and drew him a chart of the islands; Matonabbee, who led Hearne to the Arctic coast; Sacagawea and the Shoshone guide Old Toby with Lewis and Clark; Kadu, the Marshallese navigator on the Rurik; Sidi Mubarak Bombay, caravan leader to Burton, Speke and Stanley; Kehu in New Zealand; and the Bedouin Salih bin Kalut, who took Bertram Thomas across the Empty Quarter.</p>
+
+<h2><span class="n">07 · How I did this</span>Methods and caveats</h2>
+<p><b>The gazetteer.</b> I compiled 681 journeys in eight regional files: Greek and Phoenician, Roman and medieval, the Atlantic and Indian Ocean, the Americas, the African interior, overland Asia, the Pacific and the poles, and the other points of view. 571 are Europe's, 42 the Islamic world's, 43 China's and 25 Polynesian or Austronesian. Each has a leader, sponsor, years, mode (sea, land, river, sledge, air, or a starting world), a dated route of 16,038 waypoints in all, a one-line summary, sources and notes. Routes follow coasts and named stops; 181 are marked low confidence because the route is reconstructed or disputed. Duplicates across files were merged (3) or renamed (2). Polynesian dates are settlement dates from archaeology and radiocarbon, not written accounts.</p>
+<p><b>Sources checked.</b> Every journey carries a source status, shown in its popup. 27% have their start and end years confirmed in the text of the cited Wikipedia article by an automatic check; 60% were taken by the compiler from the pages they cite; 11% cite an article that does not contain one or both years, or have dates partly from general knowledge; and 2.5% cite a page that could not be read or found. I ran every result again with only the first two groups (587 journeys) as a check.</p>
+<p><b>The model.</b> The Earth is divided into 288,122 equal-area H3 hexagons. Routes are cut into points every 8 km with years interpolated between dated waypoints, and a cell is lit by a journey when its centre is within reach of a point (distances above), in the year of the nearest point. A cell's first year is the earliest over all journeys of a point of view. An unknown pocket of fewer than 150 cells (about 266,000 km², roughly the size of the United Kingdom) wholly ringed by known cells counts as known from the year its rim was complete: this fills 8.5% of Europe's known area. A cell is land if its centre is on Natural Earth land, including Antarctic ice shelves.</p>
+<p><b>Surveys and settlement.</b> Journeys cannot capture the township surveys of the United States and the Canadian prairies, the trigonometrical survey of India, the Russian land survey or the settlement of the Pampas and of south-eastern Australia. For Europe only, I added 52 regions, defined by modern first-level divisions or countries and sometimes clipped to their settled part, each lit in one year between 1734 and 1955: when its systematic survey was published in Europe or settlement became general. They add 16.3% of the world's land by 1960. Their dates are mine, from general knowledge of the history of cartography, and are marked as not confirmed; they are coarse by design, and the page and data give every result with and without them.</p>
+<p><b>Sensitivity.</b> The radii, the fill and the survey layer are choices, so I varied them. Without the survey layer Europe's 1960 land share is 64%. Halving every radius brings it to 72%; increasing them by half raises it to 86%; no fill gives 76% and a fill of up to 400 cells 86%. Keeping only entries with confirmed or compiler-read sources, which also drops the survey layer, gives 58% and moves the year half the land was lit from 1841 to 1877. The shape of the curve, the slow millennium, the jump after 1492, the nineteenth-century surge, survives every variant; the exact percentages do not, so read them as indications.</p>
+<div class="figure"><p class="fig-h">Sensitivity of the main results</p><p class="fig-sub">Europe's share of the land lit, by year, and the year a quarter and half of the land was lit, under each variant.</p><div class="tablebox"><table class="tbl" id="sensTable"></table></div></div>
+<p><b>What this is not.</b> It is not a measure of what any society knew. It measures how much of the Earth lies close to the journeys in one gazetteer, plus a coarse survey layer for Europe, compiled by me with AI assistance from mostly English-language sources, which know Europe's explorers far better than Arabic, Persian, Chinese or Polynesian traditions; the other points of view are therefore thinner than they should be. Trade, missions and much colonial mapping are missing, and the other traditions have no survey layer. Dates are the years a journey took place, not the years its account was published. Routes are approximations, and a fixed reveal distance treats a desert crossing and a forest river alike.</p>
+<details><summary>Sources and licences</summary>
+<ul>
+<li>The journeys: compiled for this study from English Wikipedia articles (CC BY-SA 4.0) and other published accounts cited per journey; the gazetteer (data/expeditions.json) is released under CC BY-SA 4.0 to respect Wikipedia's licence.</li>
+<li>Natural Earth land, Antarctic ice shelves, countries and populated places (public domain).</li>
+<li>H3 hexagonal grid (Uber, Apache 2.0). Leaflet (BSD-2). Optional relief tiles © Esri.</li>
+<li>Inspired by the animation "World exploration from Europe's point of view", widely shared on Reddit.</li>
+</ul></details>
+
+<div class="cta"><a class="p" href="https://doi.org/10.5281/zenodo.23897793">Read the paper</a><a href="https://github.com/Tristan-Hotham/known-world">Data and code</a><a href="https://blog.tristanhotham.com/2026/10/31/known-world/">Blog post</a></div>
+
+<footer>
+<p>Dr Tristan Hotham, Independent researcher. ORCID <a href="https://orcid.org/0000-0003-4931-9349">0000-0003-4931-9349</a>.</p>
+<p>Cite as: Hotham, T. (2026) The Known World: how much of the Earth each tradition had written about, from the Bronze Age to 1960. Zenodo. <a href="https://doi.org/10.5281/zenodo.23897793">https://doi.org/10.5281/zenodo.23897793</a></p>
+<p>Licence: code MIT; text, figures and derived data CC BY 4.0; the journey gazetteer CC BY-SA 4.0. Natural Earth public domain.</p>
+<p>I wrote the text, with drafting and editing assistance from Claude (Anthropic), which also helped prepare the analysis code. I reviewed and checked all text and results.</p>
+</footer>
+</div>
+<div class="tip" id="tip"></div>
+<button class="btn theme" id="theme" aria-label="Toggle dark mode">◐</button>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+const R = {"data":{"journeys":681,"files":8,"by_viewpoint":{"polynesia":25,"europe":571,"china":43,"islamic":42},"by_mode":{"sea":286,"base":25,"river":69,"land":277,"sledge":18,"air":6},"by_status":{"read_by_compiler":405,"unsourced":17,"years_not_confirmed":77,"years_confirmed":182},"status_pct":{"read_by_compiler":59.5,"years_confirmed":26.7,"years_not_confirmed":11.3,"unsourced":2.5},"confirmed_n":587,"confirmed_pct":86.2,"waypoints":16038,"earliest":-2200,"latest":1958,"europe_earliest":-1400,"lost_flagged":13,"low_conf":181,"with_guides":72,"europe_n":571,"surveys":52,"survey_first":1734,"survey_last":1955,"merged_duplicates":3,"renamed":2},"grid":{"res":4,"cells":288122,"land_cells":82173,"mean_km2":1770,"land_mkm2":148.1,"earth_mkm2":510.1,"fill_cells":150,"fill_km2":266000,"fill_step":10,"radius":{"sea":{"sea":150,"land":40},"land":{"sea":120,"land":120},"river":{"sea":120,"land":120},"sledge":{"sea":120,"land":120},"air":{"sea":150,"land":150},"base":{"sea":250,"land":250},"survey":{"sea":0,"land":0}},"step_km":8,"year0":-2200,"year1":1960},"share":{"europe":{"-1400":{"land":0.7,"surface":0.5},"-1000":{"land":0.7,"surface":0.5},"-500":{"land":3.4,"surface":2.0},"-300":{"land":5.1,"surface":2.8},"1":{"land":6.7,"surface":3.7},"150":{"land":14.9,"surface":6.8},"500":{"land":15.2,"surface":7.2},"1000":{"land":16.1,"surface":8.0},"1200":{"land":17.0,"surface":8.4},"1400":{"land":19.5,"surface":9.2},"1492":{"land":20.0,"surface":10.8},"1500":{"land":20.3,"surface":14.9},"1550":{"land":25.7,"surface":24.1},"1600":{"land":26.4,"surface":28.9},"1650":{"land":30.3,"surface":33.6},"1700":{"land":31.4,"surface":34.1},"1750":{"land":38.1,"surface":37.7},"1800":{"land":44.3,"surface":49.2},"1850":{"land":53.0,"surface":56.6},"1900":{"land":67.3,"surface":61.2},"1930":{"land":73.6,"surface":63.7},"1960":{"land":80.2,"surface":66.0},"peak_land":80.2,"peak_surface":66.0,"final_year_growth":1958},"islamic":{"-1400":{"land":0.0,"surface":0.0},"-1000":{"land":0.0,"surface":0.0},"-500":{"land":0.0,"surface":0.0},"-300":{"land":0.0,"surface":0.0},"1":{"land":0.0,"surface":0.0},"150":{"land":0.0,"surface":0.0},"500":{"land":0.0,"surface":0.0},"1000":{"land":9.0,"surface":4.0},"1200":{"land":15.5,"surface":6.5},"1400":{"land":16.9,"surface":7.5},"1492":{"land":16.9,"surface":7.5},"1500":{"land":16.9,"surface":7.5},"1550":{"land":19.1,"surface":9.5},"1600":{"land":19.1,"surface":9.5},"1650":{"land":19.1,"surface":9.5},"1700":{"land":19.5,"surface":9.6},"1750":{"land":19.5,"surface":9.6},"1800":{"land":19.5,"surface":9.6},"1850":{"land":19.5,"surface":9.6},"1900":{"land":19.5,"surface":9.6},"1930":{"land":19.5,"surface":9.6},"1960":{"land":19.5,"surface":9.6},"peak_land":19.5,"peak_surface":9.6,"final_year_growth":1673},"china":{"-1400":{"land":0.0,"surface":0.0},"-1000":{"land":0.8,"surface":0.3},"-500":{"land":1.2,"surface":0.4},"-300":{"land":1.2,"surface":0.4},"1":{"land":3.9,"surface":1.6},"150":{"land":4.3,"surface":1.7},"500":{"land":4.9,"surface":2.3},"1000":{"land":6.4,"surface":3.0},"1200":{"land":6.4,"surface":3.0},"1400":{"land":11.3,"surface":5.4},"1492":{"land":11.5,"surface":5.6},"1500":{"land":11.5,"surface":5.6},"1550":{"land":11.5,"surface":5.6},"1600":{"land":11.5,"surface":5.6},"1650":{"land":11.5,"surface":5.6},"1700":{"land":11.5,"surface":5.6},"1750":{"land":14.7,"surface":6.6},"1800":{"land":14.7,"surface":6.6},"1850":{"land":14.7,"surface":6.6},"1900":{"land":14.7,"surface":6.6},"1930":{"land":14.7,"surface":6.6},"1960":{"land":14.7,"surface":6.6},"peak_land":14.7,"peak_surface":6.6,"final_year_growth":1755},"polynesia":{"-1400":{"land":0.0,"surface":0.3},"-1000":{"land":0.1,"surface":0.7},"-500":{"land":0.1,"surface":0.9},"-300":{"land":0.1,"surface":0.9},"1":{"land":0.1,"surface":0.9},"150":{"land":0.1,"surface":0.9},"500":{"land":0.1,"surface":0.9},"1000":{"land":0.1,"surface":1.3},"1200":{"land":0.1,"surface":2.0},"1400":{"land":0.3,"surface":3.2},"1492":{"land":0.3,"surface":3.3},"1500":{"land":0.3,"surface":3.3},"1550":{"land":0.3,"surface":3.3},"1600":{"land":0.3,"surface":3.3},"1650":{"land":0.3,"surface":3.3},"1700":{"land":0.3,"surface":3.3},"1750":{"land":0.3,"surface":3.3},"1800":{"land":0.3,"surface":3.3},"1850":{"land":0.3,"surface":3.3},"1900":{"land":0.3,"surface":3.3},"1930":{"land":0.3,"surface":3.3},"1960":{"land":0.3,"surface":3.3},"peak_land":0.3,"peak_surface":3.3,"final_year_growth":1500},"all":{"-1400":{"land":0.7,"surface":0.7},"-1000":{"land":1.6,"surface":1.4},"-500":{"land":4.8,"surface":3.9},"-300":{"land":6.4,"surface":4.6},"1":{"land":10.7,"surface":6.6},"150":{"land":17.9,"surface":9.3},"500":{"land":18.0,"surface":9.7},"1000":{"land":20.7,"surface":11.6},"1200":{"land":23.3,"surface":13.2},"1400":{"land":27.1,"surface":15.7},"1492":{"land":27.3,"surface":17.3},"1500":{"land":27.5,"surface":21.3},"1550":{"land":34.0,"surface":30.3},"1600":{"land":34.6,"surface":34.3},"1650":{"land":38.1,"surface":38.4},"1700":{"land":39.0,"surface":38.8},"1750":{"land":44.6,"surface":41.8},"1800":{"land":50.1,"surface":52.3},"1850":{"land":57.7,"surface":59.3},"1900":{"land":70.0,"surface":63.3},"1930":{"land":76.0,"surface":65.8},"1960":{"land":82.3,"surface":67.9}}},"series_decades":{"europe":{"years":[-2200,-2190,-2180,-2170,-2160,-2150,-2140,-2130,-2120,-2110,-2100,-2090,-2080,-2070,-2060,-2050,-2040,-2030,-2020,-2010,-2000,-1990,-1980,-1970,-1960,-1950,-1940,-1930,-1920,-1910,-1900,-1890,-1880,-1870,-1860,-1850,-1840,-1830,-1820,-1810,-1800,-1790,-1780,-1770,-1760,-1750,-1740,-1730,-1720,-1710,-1700,-1690,-1680,-1670,-1660,-1650,-1640,-1630,-1620,-1610,-1600,-1590,-1580,-1570,-1560,-1550,-1540,-1530,-1520,-1510,-1500,-1490,-1480,-1470,-1460,-1450,-1440,-1430,-1420,-1410,-1400,-1390,-1380,-1370,-1360,-1350,-1340,-1330,-1320,-1310,-1300,-1290,-1280,-1270,-1260,-1250,-1240,-1230,-1220,-1210,-1200,-1190,-1180,-1170,-1160,-1150,-1140,-1130,-1120,-1110,-1100,-1090,-1080,-1070,-1060,-1050,-1040,-1030,-1020,-1010,-1000,-990,-980,-970,-960,-950,-940,-930,-920,-910,-900,-890,-880,-870,-860,-850,-840,-830,-820,-810,-800,-790,-780,-770,-760,-750,-740,-730,-720,-710,-700,-690,-680,-670,-660,-650,-640,-630,-620,-610,-600,-590,-580,-570,-560,-550,-540,-530,-520,-510,-500,-490,-480,-470,-460,-450,-440,-430,-420,-410,-400,-390,-380,-370,-360,-350,-340,-330,-320,-310,-300,-290,-280,-270,-260,-250,-240,-230,-220,-210,-200,-190,-180,-170,-160,-150,-140,-130,-120,-110,-100,-90,-80,-70,-60,-50,-40,-30,-20,-10,0,10,20,30,40,50,60,70,80,90,100,110,120,130,140,150,160,170,180,190,200,210,220,230,240,250,260,270,280,290,300,310,320,330,340,350,360,370,380,390,400,410,420,430,440,450,460,470,480,490,500,510,520,530,540,550,560,570,580,590,600,610,620,630,640,650,660,670,680,690,700,710,720,730,740,750,760,770,780,790,800,810,820,830,840,850,860,870,880,890,900,910,920,930,940,950,960,970,980,990,1000,1010,1020,1030,1040,1050,1060,1070,1080,1090,1100,1110,1120,1130,1140,1150,1160,1170,1180,1190,1200,1210,1220,1230,1240,1250,1260,1270,1280,1290,1300,1310,1320,1330,1340,1350,1360,1370,1380,1390,1400,1410,1420,1430,1440,1450,1460,1470,1480,1490,1500,1510,1520,1530,1540,1550,1560,1570,1580,1590,1600,1610,1620,1630,1640,1650,1660,1670,1680,1690,1700,1710,1720,1730,1740,1750,1760,1770,1780,1790,1800,1810,1820,1830,1840,1850,1860,1870,1880,1890,1900,1910,1920,1930,1940,1950,1960],"land":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,1.1,1.1,1.1,1.1,1.1,1.1,1.1,1.1,1.1,1.1,1.1,1.1,1.1,1.1,1.1,1.2,1.3,1.3,1.3,1.3,1.3,1.3,1.3,1.3,1.6,3.4,3.4,3.4,3.4,3.4,3.4,3.5,3.5,3.5,3.5,3.5,3.5,3.5,3.5,3.5,3.5,3.5,3.8,4.8,4.8,5.1,5.1,5.1,5.1,5.1,5.1,5.1,5.1,5.1,5.1,5.1,5.1,5.1,5.3,5.3,5.3,5.3,5.3,5.3,5.3,5.3,5.3,5.3,5.3,5.4,5.8,5.8,5.8,6.3,6.5,6.7,6.7,6.7,6.7,6.7,6.9,7.0,7.3,7.3,7.5,7.8,8.6,8.6,8.6,8.6,14.9,14.9,15.2,15.2,15.2,15.2,15.2,15.2,15.2,15.2,15.2,15.2,15.2,15.2,15.2,15.2,15.2,15.2,15.2,15.2,15.2,15.2,15.2,15.2,15.2,15.2,15.2,15.2,15.2,15.2,15.2,15.2,15.2,15.2,15.2,15.2,15.2,15.2,15.2,15.2,15.2,15.2,15.6,15.6,15.6,15.6,15.6,15.6,15.6,15.6,15.6,15.6,15.6,15.6,15.6,15.6,15.6,15.6,15.6,15.6,15.6,15.6,15.6,15.6,15.6,15.6,15.6,15.6,15.6,15.7,15.8,15.8,15.9,15.9,15.9,15.9,15.9,16.1,16.1,16.1,16.1,16.1,16.1,16.1,16.1,16.1,16.1,16.1,16.1,16.1,16.1,16.1,16.1,16.8,16.8,16.8,16.8,16.8,16.8,16.8,16.8,16.8,17.0,17.0,17.0,17.0,17.0,17.0,17.0,17.0,17.6,18.1,18.1,18.8,19.4,19.4,19.4,19.4,19.5,19.5,19.9,19.9,19.5,19.5,19.5,19.5,19.5,19.5,19.6,19.6,19.7,19.8,19.8,19.9,20.0,20.3,20.4,21.3,22.0,24.4,25.7,25.9,25.9,26.0,26.2,26.4,26.8,27.4,28.1,28.5,30.3,30.6,30.9,31.2,31.2,31.4,31.4,31.8,32.6,36.2,38.1,38.7,39.0,40.3,40.9,44.3,46.3,47.4,49.2,49.5,53.0,55.5,58.1,63.9,66.2,67.3,71.3,72.5,73.6,75.0,75.9,80.2],"surface":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.8,0.8,0.8,0.8,0.8,1.0,1.7,1.7,1.7,1.7,1.7,1.7,1.7,1.7,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.1,2.7,2.7,2.8,2.8,2.8,2.8,2.8,2.8,2.8,2.8,2.8,2.8,2.8,2.8,2.8,2.8,2.8,2.8,2.8,2.8,2.8,3.2,3.2,3.2,3.2,3.2,3.2,3.4,3.4,3.4,3.6,3.7,3.7,3.7,3.7,3.7,3.7,4.0,4.1,4.2,4.2,4.2,4.3,4.5,4.5,4.5,4.5,6.8,6.8,7.2,7.2,7.2,7.2,7.2,7.2,7.2,7.2,7.2,7.2,7.2,7.2,7.2,7.2,7.2,7.2,7.2,7.2,7.2,7.2,7.2,7.2,7.2,7.2,7.2,7.2,7.2,7.2,7.2,7.2,7.2,7.2,7.2,7.2,7.2,7.2,7.2,7.2,7.2,7.2,7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.3,7.4,7.4,7.4,7.5,7.5,7.6,7.6,7.6,7.7,7.7,7.7,7.7,7.7,7.7,7.7,8.0,8.0,8.0,8.0,8.0,8.0,8.0,8.0,8.0,8.3,8.3,8.3,8.3,8.3,8.3,8.3,8.3,8.3,8.4,8.4,8.4,8.4,8.4,8.4,8.4,8.4,8.6,8.7,8.7,8.9,9.1,9.1,9.1,9.1,9.1,9.1,9.3,9.3,9.2,9.2,9.2,9.2,9.2,9.2,9.4,9.4,9.1,9.1,9.2,9.3,10.4,14.9,16.1,17.6,22.2,23.2,24.1,24.2,26.0,26.2,26.5,28.9,30.6,31.6,32.0,32.1,33.6,33.7,33.8,33.9,33.9,34.1,34.1,34.2,35.0,36.4,37.7,37.9,39.9,44.8,46.8,49.2,50.1,52.1,53.3,55.1,56.6,57.4,58.1,59.9,60.5,61.2,62.4,63.3,63.7,64.2,64.6,66.0]},"islamic":{"years":[-2200,-2190,-2180,-2170,-2160,-2150,-2140,-2130,-2120,-2110,-2100,-2090,-2080,-2070,-2060,-2050,-2040,-2030,-2020,-2010,-2000,-1990,-1980,-1970,-1960,-1950,-1940,-1930,-1920,-1910,-1900,-1890,-1880,-1870,-1860,-1850,-1840,-1830,-1820,-1810,-1800,-1790,-1780,-1770,-1760,-1750,-1740,-1730,-1720,-1710,-1700,-1690,-1680,-1670,-1660,-1650,-1640,-1630,-1620,-1610,-1600,-1590,-1580,-1570,-1560,-1550,-1540,-1530,-1520,-1510,-1500,-1490,-1480,-1470,-1460,-1450,-1440,-1430,-1420,-1410,-1400,-1390,-1380,-1370,-1360,-1350,-1340,-1330,-1320,-1310,-1300,-1290,-1280,-1270,-1260,-1250,-1240,-1230,-1220,-1210,-1200,-1190,-1180,-1170,-1160,-1150,-1140,-1130,-1120,-1110,-1100,-1090,-1080,-1070,-1060,-1050,-1040,-1030,-1020,-1010,-1000,-990,-980,-970,-960,-950,-940,-930,-920,-910,-900,-890,-880,-870,-860,-850,-840,-830,-820,-810,-800,-790,-780,-770,-760,-750,-740,-730,-720,-710,-700,-690,-680,-670,-660,-650,-640,-630,-620,-610,-600,-590,-580,-570,-560,-550,-540,-530,-520,-510,-500,-490,-480,-470,-460,-450,-440,-430,-420,-410,-400,-390,-380,-370,-360,-350,-340,-330,-320,-310,-300,-290,-280,-270,-260,-250,-240,-230,-220,-210,-200,-190,-180,-170,-160,-150,-140,-130,-120,-110,-100,-90,-80,-70,-60,-50,-40,-30,-20,-10,0,10,20,30,40,50,60,70,80,90,100,110,120,130,140,150,160,170,180,190,200,210,220,230,240,250,260,270,280,290,300,310,320,330,340,350,360,370,380,390,400,410,420,430,440,450,460,470,480,490,500,510,520,530,540,550,560,570,580,590,600,610,620,630,640,650,660,670,680,690,700,710,720,730,740,750,760,770,780,790,800,810,820,830,840,850,860,870,880,890,900,910,920,930,940,950,960,970,980,990,1000,1010,1020,1030,1040,1050,1060,1070,1080,1090,1100,1110,1120,1130,1140,1150,1160,1170,1180,1190,1200,1210,1220,1230,1240,1250,1260,1270,1280,1290,1300,1310,1320,1330,1340,1350,1360,1370,1380,1390,1400,1410,1420,1430,1440,1450,1460,1470,1480,1490,1500,1510,1520,1530,1540,1550,1560,1570,1580,1590,1600,1610,1620,1630,1640,1650,1660,1670,1680,1690,1700,1710,1720,1730,1740,1750,1760,1770,1780,1790,1800,1810,1820,1830,1840,1850,1860,1870,1880,1890,1900,1910,1920,1930,1940,1950,1960],"land":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,1.8,1.8,2.9,4.4,4.4,4.4,4.4,5.5,5.5,6.9,6.9,6.9,6.9,6.9,6.9,6.9,6.9,6.9,6.9,6.9,6.9,6.9,6.9,6.9,8.3,8.3,8.5,8.5,8.5,8.6,8.8,8.8,8.8,9.0,9.0,9.0,9.0,9.0,9.0,9.3,10.8,10.8,10.8,10.8,11.2,11.2,11.2,11.2,11.2,11.2,11.2,11.2,11.2,15.4,15.4,15.4,15.5,15.5,15.5,15.5,15.5,15.5,15.5,15.5,15.5,15.5,15.5,15.5,15.5,15.5,15.6,16.2,16.3,16.9,16.9,16.9,16.9,16.9,16.9,16.9,16.9,16.9,16.9,16.9,16.9,16.9,16.9,16.9,16.9,19.1,19.1,19.1,19.1,19.1,19.1,19.1,19.1,19.1,19.1,19.1,19.1,19.1,19.1,19.1,19.4,19.5,19.5,19.5,19.5,19.5,19.5,19.5,19.5,19.5,19.5,19.5,19.5,19.5,19.5,19.5,19.5,19.5,19.5,19.5,19.5,19.5,19.5,19.5,19.5,19.5,19.5,19.5,19.5,19.5],"surface":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.8,0.8,1.2,1.7,1.7,1.7,1.7,2.1,2.1,2.6,2.6,2.6,2.6,2.6,2.6,2.6,2.6,2.6,2.6,2.6,2.6,2.6,2.6,3.1,3.6,3.6,3.7,3.7,3.7,3.8,3.9,3.9,4.0,4.0,4.0,4.0,4.0,4.0,4.0,4.1,4.6,4.6,4.6,4.6,4.7,4.7,4.7,4.7,4.7,4.7,4.7,4.7,4.7,6.3,6.3,6.3,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.5,6.6,6.9,7.3,7.5,7.5,7.5,7.5,7.5,7.5,7.5,7.5,7.5,7.5,7.5,7.5,7.5,7.5,7.5,7.5,9.5,9.5,9.5,9.5,9.5,9.5,9.5,9.5,9.5,9.5,9.5,9.5,9.5,9.5,9.5,9.6,9.6,9.6,9.6,9.6,9.6,9.6,9.6,9.6,9.6,9.6,9.6,9.6,9.6,9.6,9.6,9.6,9.6,9.6,9.6,9.6,9.6,9.6,9.6,9.6,9.6,9.6,9.6,9.6,9.6]},"china":{"years":[-2200,-2190,-2180,-2170,-2160,-2150,-2140,-2130,-2120,-2110,-2100,-2090,-2080,-2070,-2060,-2050,-2040,-2030,-2020,-2010,-2000,-1990,-1980,-1970,-1960,-1950,-1940,-1930,-1920,-1910,-1900,-1890,-1880,-1870,-1860,-1850,-1840,-1830,-1820,-1810,-1800,-1790,-1780,-1770,-1760,-1750,-1740,-1730,-1720,-1710,-1700,-1690,-1680,-1670,-1660,-1650,-1640,-1630,-1620,-1610,-1600,-1590,-1580,-1570,-1560,-1550,-1540,-1530,-1520,-1510,-1500,-1490,-1480,-1470,-1460,-1450,-1440,-1430,-1420,-1410,-1400,-1390,-1380,-1370,-1360,-1350,-1340,-1330,-1320,-1310,-1300,-1290,-1280,-1270,-1260,-1250,-1240,-1230,-1220,-1210,-1200,-1190,-1180,-1170,-1160,-1150,-1140,-1130,-1120,-1110,-1100,-1090,-1080,-1070,-1060,-1050,-1040,-1030,-1020,-1010,-1000,-990,-980,-970,-960,-950,-940,-930,-920,-910,-900,-890,-880,-870,-860,-850,-840,-830,-820,-810,-800,-790,-780,-770,-760,-750,-740,-730,-720,-710,-700,-690,-680,-670,-660,-650,-640,-630,-620,-610,-600,-590,-580,-570,-560,-550,-540,-530,-520,-510,-500,-490,-480,-470,-460,-450,-440,-430,-420,-410,-400,-390,-380,-370,-360,-350,-340,-330,-320,-310,-300,-290,-280,-270,-260,-250,-240,-230,-220,-210,-200,-190,-180,-170,-160,-150,-140,-130,-120,-110,-100,-90,-80,-70,-60,-50,-40,-30,-20,-10,0,10,20,30,40,50,60,70,80,90,100,110,120,130,140,150,160,170,180,190,200,210,220,230,240,250,260,270,280,290,300,310,320,330,340,350,360,370,380,390,400,410,420,430,440,450,460,470,480,490,500,510,520,530,540,550,560,570,580,590,600,610,620,630,640,650,660,670,680,690,700,710,720,730,740,750,760,770,780,790,800,810,820,830,840,850,860,870,880,890,900,910,920,930,940,950,960,970,980,990,1000,1010,1020,1030,1040,1050,1060,1070,1080,1090,1100,1110,1120,1130,1140,1150,1160,1170,1180,1190,1200,1210,1220,1230,1240,1250,1260,1270,1280,1290,1300,1310,1320,1330,1340,1350,1360,1370,1380,1390,1400,1410,1420,1430,1440,1450,1460,1470,1480,1490,1500,1510,1520,1530,1540,1550,1560,1570,1580,1590,1600,1610,1620,1630,1640,1650,1660,1670,1680,1690,1700,1710,1720,1730,1740,1750,1760,1770,1780,1790,1800,1810,1820,1830,1840,1850,1860,1870,1880,1890,1900,1910,1920,1930,1940,1950,1960],"land":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,1.2,1.2,1.2,1.2,1.2,1.2,1.2,1.2,1.2,1.2,1.2,1.2,1.2,1.2,1.2,1.2,1.2,1.2,1.2,1.2,1.2,1.2,1.2,1.2,1.2,1.2,1.2,1.2,1.2,1.2,1.2,1.2,1.2,1.2,1.2,1.2,1.2,1.2,2.5,2.5,2.5,2.5,2.5,2.5,2.5,2.5,2.5,2.6,3.8,3.9,3.9,3.9,3.9,3.9,3.9,3.9,3.9,3.9,3.9,3.9,3.9,3.9,3.9,3.9,3.9,3.9,3.9,3.9,3.9,3.9,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.3,4.9,4.9,4.9,4.9,4.9,4.9,4.9,4.9,4.9,4.9,4.9,4.9,4.9,4.9,4.9,4.9,4.9,4.9,4.9,4.9,4.9,4.9,5.1,5.6,6.2,6.2,6.2,6.2,6.2,6.2,6.2,6.2,6.2,6.2,6.2,6.3,6.3,6.3,6.3,6.3,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,10.5,10.5,10.5,10.5,10.5,10.6,11.2,11.2,11.2,11.2,11.2,11.3,11.3,11.3,11.3,11.3,11.3,11.3,11.3,11.5,11.5,11.5,11.5,11.5,11.5,11.5,11.5,11.5,11.5,11.5,11.5,11.5,11.5,11.5,11.5,11.5,11.5,11.5,11.5,11.5,11.5,11.5,11.5,11.5,11.5,11.5,11.5,11.5,11.5,14.7,14.7,14.7,14.7,14.7,14.7,14.7,14.7,14.7,14.7,14.7,14.7,14.7,14.7,14.7,14.7,14.7,14.7,14.7,14.7,14.7,14.7,14.7,14.7,14.7],"surface":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.4,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,1.2,1.3,1.3,1.3,1.3,1.3,1.4,1.4,1.4,1.4,1.5,1.5,1.6,1.6,1.6,1.6,1.6,1.6,1.6,1.6,1.6,1.6,1.7,1.7,1.7,1.7,1.7,1.7,1.7,1.7,1.7,1.7,1.7,1.7,1.7,1.7,1.7,1.7,1.7,1.7,1.7,1.7,1.7,1.7,1.7,1.7,1.7,1.7,1.7,1.7,1.7,1.7,1.7,2.0,2.3,2.3,2.3,2.3,2.3,2.3,2.3,2.3,2.3,2.3,2.3,2.3,2.3,2.3,2.3,2.3,2.3,2.3,2.3,2.3,2.3,2.3,2.5,2.7,2.7,2.7,2.8,2.8,2.8,2.8,2.8,2.8,2.8,2.8,2.8,2.8,2.8,2.8,2.9,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,3.0,4.8,4.8,4.8,4.8,4.8,4.8,5.1,5.1,5.1,5.1,5.1,5.4,5.4,5.4,5.4,5.4,5.4,5.4,5.4,5.5,5.6,5.6,5.6,5.6,5.6,5.6,5.6,5.6,5.6,5.6,5.6,5.6,5.6,5.6,5.6,5.6,5.6,5.6,5.6,5.6,5.6,5.6,5.6,5.6,5.6,5.6,5.6,5.6,5.6,6.6,6.6,6.6,6.6,6.6,6.6,6.6,6.6,6.6,6.6,6.6,6.6,6.6,6.6,6.6,6.6,6.6,6.6,6.6,6.6,6.6,6.6,6.6,6.6,6.6]},"polynesia":{"years":[-2200,-2190,-2180,-2170,-2160,-2150,-2140,-2130,-2120,-2110,-2100,-2090,-2080,-2070,-2060,-2050,-2040,-2030,-2020,-2010,-2000,-1990,-1980,-1970,-1960,-1950,-1940,-1930,-1920,-1910,-1900,-1890,-1880,-1870,-1860,-1850,-1840,-1830,-1820,-1810,-1800,-1790,-1780,-1770,-1760,-1750,-1740,-1730,-1720,-1710,-1700,-1690,-1680,-1670,-1660,-1650,-1640,-1630,-1620,-1610,-1600,-1590,-1580,-1570,-1560,-1550,-1540,-1530,-1520,-1510,-1500,-1490,-1480,-1470,-1460,-1450,-1440,-1430,-1420,-1410,-1400,-1390,-1380,-1370,-1360,-1350,-1340,-1330,-1320,-1310,-1300,-1290,-1280,-1270,-1260,-1250,-1240,-1230,-1220,-1210,-1200,-1190,-1180,-1170,-1160,-1150,-1140,-1130,-1120,-1110,-1100,-1090,-1080,-1070,-1060,-1050,-1040,-1030,-1020,-1010,-1000,-990,-980,-970,-960,-950,-940,-930,-920,-910,-900,-890,-880,-870,-860,-850,-840,-830,-820,-810,-800,-790,-780,-770,-760,-750,-740,-730,-720,-710,-700,-690,-680,-670,-660,-650,-640,-630,-620,-610,-600,-590,-580,-570,-560,-550,-540,-530,-520,-510,-500,-490,-480,-470,-460,-450,-440,-430,-420,-410,-400,-390,-380,-370,-360,-350,-340,-330,-320,-310,-300,-290,-280,-270,-260,-250,-240,-230,-220,-210,-200,-190,-180,-170,-160,-150,-140,-130,-120,-110,-100,-90,-80,-70,-60,-50,-40,-30,-20,-10,0,10,20,30,40,50,60,70,80,90,100,110,120,130,140,150,160,170,180,190,200,210,220,230,240,250,260,270,280,290,300,310,320,330,340,350,360,370,380,390,400,410,420,430,440,450,460,470,480,490,500,510,520,530,540,550,560,570,580,590,600,610,620,630,640,650,660,670,680,690,700,710,720,730,740,750,760,770,780,790,800,810,820,830,840,850,860,870,880,890,900,910,920,930,940,950,960,970,980,990,1000,1010,1020,1030,1040,1050,1060,1070,1080,1090,1100,1110,1120,1130,1140,1150,1160,1170,1180,1190,1200,1210,1220,1230,1240,1250,1260,1270,1280,1290,1300,1310,1320,1330,1340,1350,1360,1370,1380,1390,1400,1410,1420,1430,1440,1450,1460,1470,1480,1490,1500,1510,1520,1530,1540,1550,1560,1570,1580,1590,1600,1610,1620,1630,1640,1650,1660,1670,1680,1690,1700,1710,1720,1730,1740,1750,1760,1770,1780,1790,1800,1810,1820,1830,1840,1850,1860,1870,1880,1890,1900,1910,1920,1930,1940,1950,1960],"land":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3],"surface":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.4,0.4,0.4,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.5,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.8,0.8,0.8,0.8,0.8,0.8,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.1,1.1,1.1,1.1,1.1,1.1,1.1,1.1,1.1,1.2,1.2,1.2,1.2,1.2,1.2,1.2,1.2,1.3,1.3,1.3,1.3,1.3,1.3,1.3,1.3,1.3,1.3,1.3,1.3,1.3,1.3,1.3,1.3,1.3,1.3,1.3,1.3,1.5,1.5,1.5,1.5,1.5,1.5,1.5,1.5,1.5,1.5,1.5,1.5,1.6,1.6,1.7,1.8,1.9,2.0,2.1,2.4,2.4,2.5,2.7,2.8,2.9,2.9,3.0,3.2,3.2,3.2,3.2,3.2,3.2,3.2,3.2,3.2,3.2,3.2,3.2,3.2,3.2,3.3,3.2,3.2,3.2,3.3,3.3,3.3,3.3,3.3,3.3,3.3,3.3,3.3,3.3,3.3,3.3,3.3,3.3,3.3,3.3,3.3,3.3,3.3,3.3,3.3,3.3,3.3,3.3,3.3,3.3,3.3,3.3,3.3,3.3,3.3,3.3,3.3,3.3,3.3,3.3,3.3,3.3,3.3,3.3,3.3,3.3,3.3,3.3,3.3,3.3,3.3,3.3,3.3]},"all":{"years":[-2200,-2190,-2180,-2170,-2160,-2150,-2140,-2130,-2120,-2110,-2100,-2090,-2080,-2070,-2060,-2050,-2040,-2030,-2020,-2010,-2000,-1990,-1980,-1970,-1960,-1950,-1940,-1930,-1920,-1910,-1900,-1890,-1880,-1870,-1860,-1850,-1840,-1830,-1820,-1810,-1800,-1790,-1780,-1770,-1760,-1750,-1740,-1730,-1720,-1710,-1700,-1690,-1680,-1670,-1660,-1650,-1640,-1630,-1620,-1610,-1600,-1590,-1580,-1570,-1560,-1550,-1540,-1530,-1520,-1510,-1500,-1490,-1480,-1470,-1460,-1450,-1440,-1430,-1420,-1410,-1400,-1390,-1380,-1370,-1360,-1350,-1340,-1330,-1320,-1310,-1300,-1290,-1280,-1270,-1260,-1250,-1240,-1230,-1220,-1210,-1200,-1190,-1180,-1170,-1160,-1150,-1140,-1130,-1120,-1110,-1100,-1090,-1080,-1070,-1060,-1050,-1040,-1030,-1020,-1010,-1000,-990,-980,-970,-960,-950,-940,-930,-920,-910,-900,-890,-880,-870,-860,-850,-840,-830,-820,-810,-800,-790,-780,-770,-760,-750,-740,-730,-720,-710,-700,-690,-680,-670,-660,-650,-640,-630,-620,-610,-600,-590,-580,-570,-560,-550,-540,-530,-520,-510,-500,-490,-480,-470,-460,-450,-440,-430,-420,-410,-400,-390,-380,-370,-360,-350,-340,-330,-320,-310,-300,-290,-280,-270,-260,-250,-240,-230,-220,-210,-200,-190,-180,-170,-160,-150,-140,-130,-120,-110,-100,-90,-80,-70,-60,-50,-40,-30,-20,-10,0,10,20,30,40,50,60,70,80,90,100,110,120,130,140,150,160,170,180,190,200,210,220,230,240,250,260,270,280,290,300,310,320,330,340,350,360,370,380,390,400,410,420,430,440,450,460,470,480,490,500,510,520,530,540,550,560,570,580,590,600,610,620,630,640,650,660,670,680,690,700,710,720,730,740,750,760,770,780,790,800,810,820,830,840,850,860,870,880,890,900,910,920,930,940,950,960,970,980,990,1000,1010,1020,1030,1040,1050,1060,1070,1080,1090,1100,1110,1120,1130,1140,1150,1160,1170,1180,1190,1200,1210,1220,1230,1240,1250,1260,1270,1280,1290,1300,1310,1320,1330,1340,1350,1360,1370,1380,1390,1400,1410,1420,1430,1440,1450,1460,1470,1480,1490,1500,1510,1520,1530,1540,1550,1560,1570,1580,1590,1600,1610,1620,1630,1640,1650,1660,1670,1680,1690,1700,1710,1720,1730,1740,1750,1760,1770,1780,1790,1800,1810,1820,1830,1840,1850,1860,1870,1880,1890,1900,1910,1920,1930,1940,1950,1960],"land":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.7,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,0.8,1.6,1.6,1.6,1.6,1.6,1.6,1.6,1.6,1.6,1.6,1.6,1.6,1.6,1.6,1.6,1.6,1.6,1.6,1.6,1.6,1.7,1.7,1.7,1.7,1.7,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.0,2.4,2.5,2.5,2.6,2.6,2.6,2.6,2.6,2.6,2.8,4.8,4.8,4.8,4.8,4.8,4.8,4.8,4.8,4.8,4.8,4.8,4.8,4.8,4.8,4.8,4.8,4.8,5.2,6.2,6.2,6.4,6.4,6.4,6.4,6.4,6.4,6.4,6.4,7.7,7.7,7.7,7.8,7.8,7.9,7.9,7.9,7.9,8.1,9.1,9.2,9.2,9.2,9.2,9.2,9.3,9.8,9.8,9.8,10.2,10.4,10.7,10.7,10.7,10.7,10.7,10.8,11.0,11.2,11.2,11.4,11.8,11.8,11.8,11.8,11.8,17.9,17.9,17.9,17.9,17.9,17.9,17.9,17.9,17.9,17.9,17.9,17.9,17.9,17.9,17.9,17.9,17.9,17.9,17.9,17.9,17.9,17.9,17.9,17.9,17.9,17.9,17.9,18.0,18.0,18.0,18.0,18.0,18.0,18.0,18.0,18.0,18.0,18.0,18.0,18.0,18.0,18.0,18.5,18.5,18.5,18.5,18.5,18.5,19.1,19.3,19.7,19.7,19.7,19.7,19.7,19.8,19.8,19.8,19.8,19.8,19.8,19.8,19.8,19.8,19.8,19.8,19.8,19.8,19.8,19.9,20.0,20.0,20.1,20.1,20.1,20.1,20.1,20.3,20.4,20.4,20.4,20.6,20.6,20.6,20.7,20.7,20.7,20.7,21.1,21.1,21.1,21.1,21.5,22.2,22.2,22.2,22.2,22.2,22.2,22.2,22.2,23.3,23.3,23.3,23.3,23.3,23.3,23.3,25.1,25.1,25.5,25.9,25.9,26.0,26.1,26.3,26.3,26.3,26.3,26.3,26.5,27.1,27.1,27.1,27.1,27.1,27.1,27.1,27.1,27.1,27.1,27.2,27.2,27.2,27.2,27.5,27.5,29.9,30.6,32.9,34.0,34.2,34.2,34.3,34.5,34.6,34.9,35.3,36.0,36.3,38.1,38.3,38.4,38.8,38.8,39.0,39.0,41.5,42.1,43.3,44.6,45.2,45.4,46.5,47.0,50.1,51.9,52.8,54.2,54.6,57.7,59.9,61.6,66.9,68.9,70.0,73.8,75.1,76.0,77.3,78.0,82.3],"surface":[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.7,0.7,0.7,0.7,0.7,0.7,0.8,0.8,0.8,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,0.9,1.0,1.4,1.4,1.4,1.4,1.4,1.4,1.4,1.4,1.4,1.4,1.4,1.4,1.5,1.5,1.5,1.6,1.6,1.6,1.6,1.6,1.7,1.7,1.7,1.7,1.7,1.9,1.9,1.9,1.9,1.9,1.9,1.9,1.9,1.9,1.9,1.9,1.9,1.9,2.0,2.0,2.3,2.9,2.9,3.0,3.0,3.0,3.0,3.0,3.0,3.2,3.9,3.9,3.9,3.9,3.9,3.9,3.9,3.9,3.9,3.9,3.9,3.9,3.9,3.9,3.9,3.9,3.9,4.0,4.5,4.5,4.6,4.6,4.6,4.6,4.6,4.6,4.6,4.6,5.1,5.1,5.1,5.1,5.1,5.2,5.2,5.2,5.2,5.2,5.5,5.8,5.8,5.8,5.9,5.9,5.9,6.2,6.2,6.2,6.4,6.5,6.6,6.7,6.7,6.7,6.7,6.8,6.9,6.9,7.0,7.0,7.1,7.1,7.1,7.1,7.1,9.3,9.3,9.5,9.5,9.5,9.5,9.5,9.5,9.5,9.5,9.5,9.5,9.5,9.5,9.5,9.5,9.5,9.5,9.5,9.5,9.5,9.5,9.5,9.5,9.5,9.5,9.5,9.7,9.7,9.7,9.7,9.7,9.7,9.7,9.7,9.7,9.7,9.8,9.8,9.8,9.8,9.8,10.0,10.0,10.0,10.0,10.0,10.0,10.2,10.3,10.4,10.4,10.4,10.6,10.6,10.6,10.6,10.7,10.7,10.7,10.7,10.7,10.7,10.7,10.8,10.8,10.8,10.8,10.8,10.9,10.9,11.0,11.0,11.1,11.2,11.2,11.2,11.3,11.3,11.3,11.3,11.4,11.4,11.4,11.5,11.6,11.6,11.6,11.9,11.9,11.9,11.9,12.0,12.3,12.3,12.3,12.3,12.3,12.3,12.3,12.3,12.8,12.9,12.9,13.0,13.2,13.2,13.5,14.3,14.3,14.7,14.8,14.9,15.0,15.1,15.3,15.3,15.3,15.3,15.3,15.5,15.7,15.7,15.7,15.7,15.7,15.8,15.8,15.9,15.9,15.9,16.0,16.1,16.1,17.0,21.3,22.4,24.4,28.5,29.5,30.3,30.3,32.0,32.1,32.4,34.3,35.8,36.6,37.0,37.1,38.4,38.5,38.5,38.6,38.6,38.8,38.8,39.5,40.2,40.7,41.8,42.0,43.7,48.2,50.1,52.3,53.1,55.0,56.1,57.9,59.3,60.0,60.5,62.1,62.7,63.3,64.5,65.4,65.8,66.2,66.6,67.9]}},"milestones":{"land":{"10":150,"25":1542,"50":1841,"75":1936,"90":null},"surface":{"10":1488,"25":1567,"50":1809,"75":null,"90":null}},"fastest":{"land_decade":140,"land_gain":6.3,"surface_decade":1770,"surface_gain":4.8,"land_top5":[{"decade":140,"gain":6.3},{"decade":1870,"gain":5.9},{"decade":1950,"gain":4.3},{"decade":1900,"gain":4.0},{"decade":1730,"gain":3.6}],"land_decade_after_1400":1870,"land_gain_after_1400":5.9,"land_century":1800,"land_century_gain":23.0},"century_gain":{"-1400":0.0,"-1300":0.0,"-1200":0.0,"-1100":0.0,"-1000":0.0,"-900":0.0,"-800":0.4,"-700":0.1,"-600":2.3,"-500":0.0,"-400":1.6,"-300":0.0,"-200":0.2,"-100":1.4,"0":1.0,"100":7.4,"200":0.0,"300":0.0,"400":0.0,"500":0.4,"600":0.0,"700":0.0,"800":0.3,"900":0.2,"1000":0.7,"1100":0.2,"1200":2.4,"1300":0.1,"1400":0.8,"1500":6.1,"1600":5.1,"1700":12.8,"1800":23.0,"1900":12.9},"overtake":{"islamic":{"land":null,"land_other_ahead_from":null,"surface":null,"surface_other_ahead_from":null},"china":{"land":-599,"land_other_ahead_from":-1000,"surface":null,"surface_other_ahead_from":null},"polynesia":{"land":-1400,"land_other_ahead_from":-2162,"surface":-600,"surface_other_ahead_from":-2200},"largest_other_land":-599},"biggest":{"all":[{"id":"cook-1774","leader":"James Cook","label":"Cook 2b","start":1773,"end":1775,"mode":"sea","new_km2":8701000,"new_land_km2":48000},{"id":"magellan-1520","leader":"Ferdinand Magellan; Juan Sebastian Elcano","label":"Magellan","start":1520,"end":1522,"mode":"sea","new_km2":6937000,"new_land_km2":30000},{"id":"cook-1772","leader":"James Cook","label":"Cook 2a","start":1772,"end":1773,"mode":"sea","new_km2":6094000,"new_land_km2":2000},{"id":"mendana-1567","leader":"Alvaro de Mendana de Neira","label":"Mendana","start":1567,"end":1569,"mode":"sea","new_km2":6061000,"new_land_km2":32000},{"id":"gama-1497","leader":"Vasco da Gama","label":"Vasco da Gama","start":1497,"end":1499,"mode":"sea","new_km2":5894000,"new_land_km2":7000},{"id":"laperouse-1786","leader":"Jean-Francois de Galaup, comte de La Perouse","label":"La Perouse","start":1786,"end":1787,"mode":"sea","new_km2":5674000,"new_land_km2":12000},{"id":"saavedra-1527","leader":"Alvaro de Saavedra Ceron","label":"Saavedra","start":1527,"end":1529,"mode":"sea","new_km2":5604000,"new_land_km2":125000},{"id":"cook-1768","leader":"James Cook","label":"Cook 1","start":1769,"end":1770,"mode":"sea","new_km2":5438000,"new_land_km2":348000},{"id":"bellingshausen-1819","leader":"Fabian Gottlieb von Bellingshausen; Mikhail Lazarev","label":"Bellingshausen","start":1819,"end":1821,"mode":"sea","new_km2":4917000,"new_land_km2":4000},{"id":"loaisa-1526","leader":"Garcia Jofre de Loaisa; Toribio Alonso de Salazar","label":"Loaisa","start":1526,"end":1526,"mode":"sea","new_km2":4911000,"new_land_km2":4000}],"land":[{"id":"fremont-1843","leader":"John C. Fremont","label":"Fremont 1843","start":1843,"end":1844,"mode":"land","new_km2":1504000,"new_land_km2":1504000},{"id":"maes-titianus-100","leader":"Agents of Maes Titianus","label":"Maes Titianus","start":100,"end":102,"mode":"land","new_km2":1252000,"new_land_km2":1252000},{"id":"messerschmidt-1719","leader":"Daniel Gottlieb Messerschmidt","label":"Messerschmidt","start":1719,"end":1725,"mode":"land","new_km2":1251000,"new_land_km2":1251000},{"id":"polo-china-1275","leader":"Marco Polo","label":"Polo in China","start":1276,"end":1291,"mode":"land","new_km2":1279000,"new_land_km2":1236000},{"id":"gne-academic-1733","leader":"Johann Georg Gmelin and Gerhard Friedrich Muller","label":"Gmelin and Muller","start":1733,"end":1736,"mode":"land","new_km2":1058000,"new_land_km2":1058000},{"id":"almagro-1535","leader":"Diego de Almagro","label":"Almagro","start":1535,"end":1537,"mode":"land","new_km2":1150000,"new_land_km2":1024000},{"id":"pyanda-1620","leader":"Pyanda (Demid Pyanda)","label":"Pyanda","start":1620,"end":1624,"mode":"river","new_km2":989000,"new_land_km2":989000},{"id":"orellana-1541","leader":"Francisco de Orellana","label":"Orellana","start":1541,"end":1542,"mode":"river","new_km2":954000,"new_land_km2":937000},{"id":"carpini-1245","leader":"Giovanni da Pian del Carpine (with Benedict the Pole)","label":"Plano Carpini","start":1245,"end":1247,"mode":"land","new_km2":934000,"new_land_km2":934000},{"id":"raposo-tavares-1648","leader":"Antonio Raposo Tavares","label":"Raposo Tavares","start":1648,"end":1651,"mode":"land","new_km2":919000,"new_land_km2":919000}],"top10_all_share":17.9},"countries":[{"country":"Russia","area_km2":16878000,"first":-589,"y50":1742,"y90":null,"known_1960_pct":64.4},{"country":"Antarctica","area_km2":13785000,"first":1821,"y50":null,"y90":null,"known_1960_pct":24.8},{"country":"Canada","area_km2":9887000,"first":986,"y50":1921,"y90":1955,"known_1960_pct":100.0},{"country":"United States of America","area_km2":9423000,"first":1513,"y50":1806,"y90":1955,"known_1960_pct":99.9},{"country":"China","area_km2":9388000,"first":101,"y50":1661,"y90":1870,"known_1960_pct":98.5},{"country":"Brazil","area_km2":8495000,"first":1500,"y50":1827,"y90":null,"known_1960_pct":77.6},{"country":"Australia","area_km2":7719000,"first":1606,"y50":1873,"y90":1880,"known_1960_pct":92.2},{"country":"India","area_km2":3169000,"first":-515,"y50":150,"y90":1870,"known_1960_pct":100.0},{"country":"Argentina","area_km2":2804000,"first":1516,"y50":1800,"y90":1885,"known_1960_pct":100.0},{"country":"Kazakhstan","area_km2":2711000,"first":-329,"y50":1253,"y90":1905,"known_1960_pct":100.0},{"country":"Dem. Rep. Congo","area_km2":2331000,"first":1485,"y50":1881,"y90":null,"known_1960_pct":78.0},{"country":"Algeria","area_km2":2322000,"first":-800,"y50":1859,"y90":1924,"known_1960_pct":95.0},{"country":"Greenland","area_km2":2148000,"first":982,"y50":null,"y90":null,"known_1960_pct":42.9},{"country":"Mexico","area_km2":1955000,"first":1517,"y50":1536,"y90":1811,"known_1960_pct":100.0},{"country":"Saudi Arabia","area_km2":1932000,"first":-26,"y50":1819,"y90":1948,"known_1960_pct":100.0},{"country":"Indonesia","area_km2":1876000,"first":150,"y50":null,"y90":null,"known_1960_pct":25.9},{"country":"Sudan","area_km2":1874000,"first":-600,"y50":1874,"y90":null,"known_1960_pct":86.7},{"country":"Libya","area_km2":1623000,"first":-750,"y50":1798,"y90":null,"known_1960_pct":84.3},{"country":"Iran","area_km2":1621000,"first":-514,"y50":-325,"y90":-1,"known_1960_pct":98.8},{"country":"Mongolia","area_km2":1552000,"first":1246,"y50":1876,"y90":null,"known_1960_pct":82.3},{"country":"Peru","area_km2":1295000,"first":1528,"y50":1542,"y90":1775,"known_1960_pct":99.9},{"country":"Chad","area_km2":1276000,"first":86,"y50":1900,"y90":null,"known_1960_pct":64.1},{"country":"Mali","area_km2":1253000,"first":1405,"y50":1805,"y90":null,"known_1960_pct":87.6},{"country":"Angola","area_km2":1252000,"first":-599,"y50":1878,"y90":null,"known_1960_pct":83.5},{"country":"South Africa","area_km2":1228000,"first":-599,"y50":1880,"y90":1880,"known_1960_pct":99.8},{"country":"Niger","area_km2":1184000,"first":86,"y50":1850,"y90":null,"known_1960_pct":83.2},{"country":"Ethiopia","area_km2":1136000,"first":150,"y50":1899,"y90":null,"known_1960_pct":58.0},{"country":"Colombia","area_km2":1136000,"first":1499,"y50":1775,"y90":null,"known_1960_pct":86.2},{"country":"Bolivia","area_km2":1094000,"first":1535,"y50":1650,"y90":1909,"known_1960_pct":100.0},{"country":"Mauritania","area_km2":1035000,"first":-598,"y50":null,"y90":null,"known_1960_pct":16.8},{"country":"Egypt","area_km2":1000000,"first":-1400,"y50":-750,"y90":1932,"known_1960_pct":100.0},{"country":"Tanzania","area_km2":945000,"first":-599,"y50":1858,"y90":1875,"known_1960_pct":100.0},{"country":"Venezuela","area_km2":911000,"first":1498,"y50":1800,"y90":null,"known_1960_pct":73.7},{"country":"Nigeria","area_km2":908000,"first":-599,"y50":1830,"y90":null,"known_1960_pct":87.9},{"country":"Pakistan","area_km2":869000,"first":-515,"y50":-326,"y90":1273,"known_1960_pct":100.0},{"country":"Namibia","area_km2":829000,"first":-599,"y50":1910,"y90":1910,"known_1960_pct":100.0},{"country":"Mozambique","area_km2":787000,"first":-599,"y50":1616,"y90":1900,"known_1960_pct":99.2},{"country":"Turkey","area_km2":782000,"first":-1400,"y50":-750,"y90":-500,"known_1960_pct":100.0},{"country":"Zambia","area_km2":763000,"first":1798,"y50":1856,"y90":1885,"known_1960_pct":100.0},{"country":"Chile","area_km2":730000,"first":1520,"y50":1537,"y90":1885,"known_1960_pct":100.0},{"country":"Myanmar","area_km2":662000,"first":150,"y50":1424,"y90":1870,"known_1960_pct":100.0},{"country":"Afghanistan","area_km2":647000,"first":-515,"y50":-329,"y90":101,"known_1960_pct":100.0},{"country":"France","area_km2":645000,"first":-575,"y50":-56,"y90":1542,"known_1960_pct":91.5},{"country":"S. Sudan","area_km2":624000,"first":62,"y50":1863,"y90":null,"known_1960_pct":74.1},{"country":"Central African Rep.","area_km2":621000,"first":1863,"y50":null,"y90":null,"known_1960_pct":35.7},{"country":"Kenya","area_km2":592000,"first":-599,"y50":1887,"y90":null,"known_1960_pct":67.3},{"country":"Madagascar","area_km2":589000,"first":1595,"y50":1905,"y90":1905,"known_1960_pct":100.0},{"country":"Morocco","area_km2":582000,"first":-800,"y50":150,"y90":null,"known_1960_pct":71.9},{"country":"Ukraine","area_km2":580000,"first":-610,"y50":150,"y90":150,"known_1960_pct":100.0},{"country":"Botswana","area_km2":574000,"first":1849,"y50":1878,"y90":null,"known_1960_pct":56.5},{"country":"Thailand","area_km2":508000,"first":150,"y50":1861,"y90":1870,"known_1960_pct":100.0},{"country":"Spain","area_km2":499000,"first":-800,"y50":-500,"y90":-179,"known_1960_pct":100.0},{"country":"Somalia","area_km2":470000,"first":-600,"y50":150,"y90":null,"known_1960_pct":85.0},{"country":"Papua New Guinea","area_km2":470000,"first":1529,"y50":1933,"y90":null,"known_1960_pct":56.4},{"country":"Cameroon","area_km2":467000,"first":91,"y50":null,"y90":null,"known_1960_pct":12.5},{"country":"Turkmenistan","area_km2":464000,"first":-330,"y50":150,"y90":569,"known_1960_pct":100.0},{"country":"Yemen","area_km2":453000,"first":-513,"y50":150,"y90":1947,"known_1960_pct":100.0},{"country":"Uzbekistan","area_km2":452000,"first":-329,"y50":569,"y90":1253,"known_1960_pct":100.0},{"country":"Sweden","area_km2":440000,"first":-324,"y50":1075,"y90":1075,"known_1960_pct":100.0},{"country":"Iraq","area_km2":436000,"first":-500,"y50":-500,"y90":150,"known_1960_pct":100.0},{"country":"Zimbabwe","area_km2":394000,"first":1512,"y50":1900,"y90":1900,"known_1960_pct":100.0},{"country":"Paraguay","area_km2":394000,"first":1649,"y50":1809,"y90":1809,"known_1960_pct":100.0},{"country":"Norway","area_km2":370000,"first":150,"y50":1075,"y90":null,"known_1960_pct":86.3},{"country":"Japan","area_km2":361000,"first":1549,"y50":1870,"y90":1870,"known_1960_pct":100.0},{"country":"Germany","area_km2":360000,"first":-324,"y50":-9,"y90":150,"known_1960_pct":100.0},{"country":"Congo","area_km2":340000,"first":1482,"y50":1880,"y90":null,"known_1960_pct":70.6},{"country":"Finland","area_km2":335000,"first":840,"y50":1075,"y90":null,"known_1960_pct":80.2},{"country":"Vietnam","area_km2":324000,"first":166,"y50":1735,"y90":1866,"known_1960_pct":100.0},{"country":"Côte d'Ivoire","area_km2":324000,"first":-598,"y50":1889,"y90":null,"known_1960_pct":57.7},{"country":"Malaysia","area_km2":320000,"first":150,"y50":null,"y90":null,"known_1960_pct":39.4},{"country":"Oman","area_km2":313000,"first":-514,"y50":150,"y90":1931,"known_1960_pct":100.0},{"country":"Poland","area_km2":310000,"first":-324,"y50":150,"y90":150,"known_1960_pct":100.0},{"country":"Philippines","area_km2":293000,"first":1521,"y50":1596,"y90":1734,"known_1960_pct":100.0},{"country":"Italy","area_km2":293000,"first":-1400,"y50":-500,"y90":-185,"known_1960_pct":100.0},{"country":"Burkina Faso","area_km2":277000,"first":1806,"y50":1888,"y90":null,"known_1960_pct":89.0},{"country":"New Zealand","area_km2":268000,"first":1642,"y50":1770,"y90":1770,"known_1960_pct":100.0},{"country":"Gabon","area_km2":259000,"first":-599,"y50":1877,"y90":null,"known_1960_pct":78.8},{"country":"Ecuador","area_km2":256000,"first":1527,"y50":1534,"y90":1560,"known_1960_pct":96.9},{"country":"Guinea","area_km2":245000,"first":1519,"y50":1827,"y90":null,"known_1960_pct":81.2},{"country":"Uganda","area_km2":242000,"first":1861,"y50":1862,"y90":null,"known_1960_pct":89.2},{"country":"Ghana","area_km2":241000,"first":-598,"y50":1888,"y90":null,"known_1960_pct":62.6},{"country":"United Kingdom","area_km2":234000,"first":-324,"y50":-54,"y90":-54,"known_1960_pct":100.0},{"country":"Romania","area_km2":234000,"first":-630,"y50":150,"y90":150,"known_1960_pct":100.0},{"country":"Laos","area_km2":233000,"first":166,"y50":1861,"y90":1867,"known_1960_pct":100.0},{"country":"Belarus","area_km2":210000,"first":150,"y50":150,"y90":150,"known_1960_pct":100.0},{"country":"Guyana","area_km2":209000,"first":1499,"y50":null,"y90":null,"known_1960_pct":23.6},{"country":"Kyrgyzstan","area_km2":196000,"first":-329,"y50":150,"y90":569,"known_1960_pct":100.0},{"country":"Senegal","area_km2":195000,"first":-598,"y50":1519,"y90":null,"known_1960_pct":83.2},{"country":"Syria","area_km2":189000,"first":-1400,"y50":-750,"y90":150,"known_1960_pct":100.0},{"country":"Cambodia","area_km2":181000,"first":1859,"y50":1866,"y90":1866,"known_1960_pct":100.0},{"country":"Uruguay","area_km2":180000,"first":1516,"y50":1800,"y90":1800,"known_1960_pct":100.0},{"country":"Somaliland","area_km2":167000,"first":50,"y50":150,"y90":150,"known_1960_pct":93.8},{"country":"Tunisia","area_km2":156000,"first":-814,"y50":-500,"y90":150,"known_1960_pct":100.0}],"last_lit":{"by_half":[{"country":"Papua New Guinea","area_km2":470000,"first":1529,"y50":1933,"y90":null,"known_1960_pct":56.4},{"country":"Canada","area_km2":9887000,"first":986,"y50":1921,"y90":1955,"known_1960_pct":100.0},{"country":"Namibia","area_km2":829000,"first":-599,"y50":1910,"y90":1910,"known_1960_pct":100.0},{"country":"Madagascar","area_km2":589000,"first":1595,"y50":1905,"y90":1905,"known_1960_pct":100.0},{"country":"Chad","area_km2":1276000,"first":86,"y50":1900,"y90":null,"known_1960_pct":64.1},{"country":"Zimbabwe","area_km2":394000,"first":1512,"y50":1900,"y90":1900,"known_1960_pct":100.0},{"country":"Ethiopia","area_km2":1136000,"first":150,"y50":1899,"y90":null,"known_1960_pct":58.0},{"country":"Côte d'Ivoire","area_km2":324000,"first":-598,"y50":1889,"y90":null,"known_1960_pct":57.7},{"country":"Burkina Faso","area_km2":277000,"first":1806,"y50":1888,"y90":null,"known_1960_pct":89.0},{"country":"Ghana","area_km2":241000,"first":-598,"y50":1888,"y90":null,"known_1960_pct":62.6}],"least_known_1960":[{"country":"Cameroon","area_km2":467000,"first":91,"y50":null,"y90":null,"known_1960_pct":12.5},{"country":"Mauritania","area_km2":1035000,"first":-598,"y50":null,"y90":null,"known_1960_pct":16.8},{"country":"Guyana","area_km2":209000,"first":1499,"y50":null,"y90":null,"known_1960_pct":23.6},{"country":"Antarctica","area_km2":13785000,"first":1821,"y50":null,"y90":null,"known_1960_pct":24.8},{"country":"Indonesia","area_km2":1876000,"first":150,"y50":null,"y90":null,"known_1960_pct":25.9},{"country":"Central African Rep.","area_km2":621000,"first":1863,"y50":null,"y90":null,"known_1960_pct":35.7},{"country":"Malaysia","area_km2":320000,"first":150,"y50":null,"y90":null,"known_1960_pct":39.4},{"country":"Greenland","area_km2":2148000,"first":982,"y50":null,"y90":null,"known_1960_pct":42.9},{"country":"Papua New Guinea","area_km2":470000,"first":1529,"y50":1933,"y90":null,"known_1960_pct":56.4},{"country":"Botswana","area_km2":574000,"first":1849,"y50":1878,"y90":null,"known_1960_pct":56.5}],"unknown_land_1960_mkm2":29.4,"unknown_antarctica_mkm2":10.4,"after_1900_mkm2":19.7,"after_1900_top":[{"country":"Canada","km2":5552000},{"country":"Antarctica","km2":3381000},{"country":"Brazil","km2":1824000},{"country":"United States of America","km2":1333000},{"country":"Russia","km2":866000},{"country":"Kazakhstan","km2":794000}]},"before_europe":{"islamic":{"km2":12340000,"land_km2":8943000,"sea_km2":3397000,"known_km2_1960":49086000,"pct_of_own":25.1,"median_lead_years":462,"top_countries":[{"country":"Brazil","km2":1234000},{"country":"Saudi Arabia","km2":925000},{"country":"India","km2":831000},{"country":"Mali","km2":828000},{"country":"Mauritania","km2":783000},{"country":"Algeria","km2":568000}]},"china":{"km2":18756000,"land_km2":12952000,"sea_km2":5805000,"known_km2_1960":33645000,"pct_of_own":55.7,"median_lead_years":616,"top_countries":[{"country":"China","km2":7069000},{"country":"Russia","km2":1188000},{"country":"Mongolia","km2":1055000},{"country":"Indonesia","km2":625000},{"country":"India","km2":486000},{"country":"Vietnam","km2":299000}]},"polynesia":{"km2":17175000,"land_km2":439000,"sea_km2":16737000,"known_km2_1960":16802000,"pct_of_own":100.0,"median_lead_years":555,"top_countries":[{"country":"New Zealand","km2":268000},{"country":"Papua New Guinea","km2":32000},{"country":"Indonesia","km2":28000},{"country":"Fiji","km2":22000},{"country":"New Caledonia","km2":21000},{"country":"United States of America","km2":21000}]}},"regions":{"hawaii":{"europe":1779,"europe_earliest":1778,"islamic":null,"islamic_earliest":null,"china":null,"china_earliest":null,"polynesia":1219,"polynesia_earliest":1219,"cells":10},"new_zealand":{"europe":1770,"europe_earliest":1642,"islamic":null,"islamic_earliest":null,"china":null,"china_earliest":null,"polynesia":1297,"polynesia_earliest":1281,"cells":142},"rapa_nui":{"europe":1722,"europe_earliest":1722,"islamic":null,"islamic_earliest":null,"china":null,"china_earliest":null,"polynesia":1250,"polynesia_earliest":1250,"cells":2},"madagascar":{"europe":1905,"europe_earliest":1595,"islamic":null,"islamic_earliest":null,"china":null,"china_earliest":null,"polynesia":null,"polynesia_earliest":893,"cells":323},"iceland":{"europe":861,"europe_earliest":795,"islamic":null,"islamic_earliest":null,"china":null,"china_earliest":null,"polynesia":null,"polynesia_earliest":null,"cells":67},"java":{"europe":1598,"europe_earliest":1511,"islamic":null,"islamic_earliest":null,"china":1225,"china_earliest":1225,"polynesia":null,"polynesia_earliest":553,"cells":78},"japan":{"europe":1870,"europe_earliest":1549,"islamic":null,"islamic_earliest":null,"china":1225,"china_earliest":247,"polynesia":null,"polynesia_earliest":null,"cells":182},"tibet":{"europe":1846,"europe_earliest":150,"islamic":null,"islamic_earliest":1030,"china":1717,"china_earliest":405,"polynesia":null,"polynesia_earliest":null,"cells":750},"mali_niger":{"europe":1806,"europe_earliest":1405,"islamic":1154,"islamic_earliest":1068,"china":null,"china_earliest":null,"polynesia":null,"polynesia_earliest":null,"cells":369},"zanzibar_coast":{"europe":150,"europe_earliest":-599,"islamic":1154,"islamic_earliest":916,"china":1225,"china_earliest":1225,"polynesia":null,"polynesia_earliest":null,"cells":48},"australia":{"europe":1873,"europe_earliest":1606,"islamic":null,"islamic_earliest":null,"china":null,"china_earliest":null,"polynesia":null,"polynesia_earliest":null,"cells":4481},"greenland":{"europe":1955,"europe_earliest":795,"islamic":null,"islamic_earliest":null,"china":null,"china_earliest":null,"polynesia":null,"polynesia_earliest":null,"cells":1440}},"sensitivity":{"main":{"land":{"150":14.9,"1492":20.0,"1700":31.4,"1800":44.3,"1900":67.3,"1960":80.2},"surface":{"1492":10.8,"1800":49.2,"1960":66.0},"milestones":{"10":150,"25":1542,"50":1841,"75":1936,"90":null},"overtake_islamic":null,"overtake_china":-599,"fastest_decade":140,"journeys":733},"journeys_only":{"land":{"150":14.9,"1492":20.0,"1700":31.4,"1800":39.4,"1900":58.0,"1960":63.9},"surface":{"1492":10.8,"1800":47.8,"1960":61.1},"milestones":{"10":150,"25":1542,"50":1861,"75":null,"90":null},"overtake_islamic":null,"overtake_china":-599,"fastest_decade":140,"journeys":681},"radius_half":{"land":{"150":9.4,"1492":13.9,"1700":20.9,"1800":34.9,"1900":58.6,"1960":72.0},"surface":{"1492":7.5,"1800":36.2,"1960":52.5},"milestones":{"10":850,"25":1735,"50":1878,"75":null,"90":null},"overtake_islamic":null,"overtake_china":-514,"fastest_decade":1870,"journeys":733},"radius_1p5":{"land":{"150":18.4,"1492":23.9,"1700":39.5,"1800":52.3,"1900":74.0,"1960":85.5},"surface":{"1492":13.2,"1800":58.9,"1960":75.1},"milestones":{"10":101,"25":1512,"50":1796,"75":1905,"90":null},"overtake_islamic":null,"overtake_china":-750,"fastest_decade":140,"journeys":733},"no_fill":{"land":{"150":14.4,"1492":19.3,"1700":29.5,"1800":42.2,"1900":64.0,"1960":76.3},"surface":{"1492":10.4,"1800":47.2,"1960":62.9},"milestones":{"10":150,"25":1603,"50":1850,"75":1955,"90":null},"overtake_islamic":null,"overtake_china":-599,"fastest_decade":140,"journeys":733},"fill_25":{"land":{"150":14.5,"1492":19.5,"1700":30.0,"1800":42.8,"1900":64.9,"1960":77.2},"surface":{"1492":10.5,"1800":47.5,"1960":63.4},"milestones":{"10":150,"25":1561,"50":1845,"75":1955,"90":null},"overtake_islamic":null,"overtake_china":-599,"fastest_decade":140,"journeys":733},"fill_400":{"land":{"150":14.9,"1492":20.0,"1700":33.4,"1800":46.4,"1900":72.1,"1960":85.5},"surface":{"1492":11.0,"1800":52.5,"1960":71.4},"milestones":{"10":150,"25":1541,"50":1825,"75":1910,"90":null},"overtake_islamic":null,"overtake_china":-599,"fastest_decade":1870,"journeys":733},"confirmed_only":{"land":{"150":8.4,"1492":16.0,"1700":27.4,"1800":35.6,"1900":52.8,"1960":58.1},"surface":{"1492":9.3,"1800":45.7,"1960":58.4},"milestones":{"10":1075,"25":1644,"50":1877,"75":null,"90":null},"overtake_islamic":1535,"overtake_china":-500,"fastest_decade":1870,"journeys":587},"no_base":{"land":{"150":7.7,"1492":14.8,"1700":26.9,"1800":39.3,"1900":64.5,"1960":77.7},"surface":{"1492":8.9,"1800":47.4,"1960":64.9},"milestones":{"10":1096,"25":1649,"50":1857,"75":1955,"90":null},"overtake_islamic":null,"overtake_china":null,"fastest_decade":1870,"journeys":708}},"sens_range":{"land_1960_min":58.1,"land_1960_max":85.5,"land_1800_min":34.9,"land_1800_max":52.3},"filled_km2":{"europe":28692000,"islamic":2569000,"china":1947000,"polynesia":283000},"filled_pct_of_known_europe":8.5,"meta":{"page":"https://maps.tristanhotham.com/known-world/","repo":"https://github.com/Tristan-Hotham/known-world","slug":"known-world"},"journeys_only":{"share":{"-1400":{"land":0.7,"surface":0.5},"-1000":{"land":0.7,"surface":0.5},"-500":{"land":3.4,"surface":2.0},"-300":{"land":5.1,"surface":2.8},"1":{"land":6.7,"surface":3.7},"150":{"land":14.9,"surface":6.8},"500":{"land":15.2,"surface":7.2},"1000":{"land":16.1,"surface":8.0},"1200":{"land":17.0,"surface":8.4},"1400":{"land":19.5,"surface":9.2},"1492":{"land":20.0,"surface":10.8},"1500":{"land":20.3,"surface":14.9},"1550":{"land":25.7,"surface":24.1},"1600":{"land":26.4,"surface":28.9},"1650":{"land":30.3,"surface":33.6},"1700":{"land":31.4,"surface":34.1},"1750":{"land":36.5,"surface":37.2},"1800":{"land":39.4,"surface":47.8},"1850":{"land":47.5,"surface":55.0},"1900":{"land":58.0,"surface":58.5},"1930":{"land":61.3,"surface":60.2},"1960":{"land":63.9,"surface":61.1}},"milestones":{"land":{"10":150,"25":1542,"50":1861,"75":null,"90":null},"surface":{"10":1488,"25":1567,"50":1820,"75":null,"90":null}},"unknown_land_1960_mkm2":53.5},"survey_added_1960":16.3,"survey_first_by_km2":25411000};
+const VPS = ["europe", "islamic", "china", "polynesia"];
+const VPN = {europe: "Europe", islamic: "the Islamic world", china: "China", polynesia: "Polynesia", all: "all four"};
+const VPS_ = {europe: "Europe", islamic: "Islamic world", china: "China", polynesia: "Polynesia", all: "All compared"};
+const VPC = {europe: "#E0533F", islamic: "#3FB58A", china: "#E3A72F", polynesia: "#5C8FE0"};
+const STATUS = {years_confirmed: ["ok", "dates checked"], read_by_compiler: ["rd", "from cited source"], years_not_confirmed: ["nc", "dates not confirmed"], unsourced: ["us", "source not confirmed"]};
+const CENT = ["#ff6a52", "#ffb347", "#ffe066", "#8be08b", "#5ed0ff", "#b59bff", "#ff8fd1"];
+const NEVERV = 65535, OFF = 2500, RS = 2048, MERC = 85.0511287798;
+let SITE = null, Jn = [], cur = {vp: "europe", year: -1400, pos: 0, surv: true}, playing = false, speed = 1, lastT = 0;
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+const yr = y => { y = Math.round(y); return y < 0 ? (-y) + " BC" : y < 1000 ? "AD " + Math.max(1, y) : String(y); };
+const yrBig = y => { y = Math.round(y); return y < 0 ? `${-y}<small>BC</small>` : y < 1000 ? `${Math.max(1, y)}<small>AD</small>` : String(y); };
+const fmt = n => Math.round(n).toLocaleString("en-GB");
+const mkm = km2 => (km2 / 1e6).toFixed(1);
+const K = v => (v === "europe" && !cur.surv) ? "europe_j" : v;     // raster and series key: Europe with or without the survey layer
+
+// ---------- time scale ----------
+let KN = [[-2200, 0], [-500, .12], [1400, .36], [1960, 1]];
+function interp(x, xs, ys) { if (x <= xs[0]) return ys[0]; for (let i = 1; i < xs.length; i++) if (x <= xs[i]) return ys[i - 1] + (x - xs[i - 1]) / (xs[i] - xs[i - 1]) * (ys[i] - ys[i - 1]); return ys[ys.length - 1]; }
+const posOf = y => interp(y, KN.map(k => k[0]), KN.map(k => k[1]));
+const yearOf = p => interp(p, KN.map(k => k[1]), KN.map(k => k[0]));
+
+// ---------- rasters ----------
+const RAS = {};          // vp -> {fy: Uint16Array, b: Uint8Array, who: Uint16Array|null, fill: Uint8Array|null}
+function loadPNG(url) {
+  return new Promise((res, rej) => {
+    const im = new Image(); im.onload = () => {
+      const c = document.createElement("canvas"); c.width = im.width; c.height = im.height;
+      const x = c.getContext("2d", {willReadFrequently: true}); x.drawImage(im, 0, 0); res(x.getImageData(0, 0, im.width, im.height).data);
+    }; im.onerror = rej; im.src = url;
+  });
+}
+async function loadVP(vp) {
+  if (RAS[vp]) return RAS[vp];
+  const d = await loadPNG(`data/raster_${vp}_year.png`);
+  const n = RS * RS, fy = new Uint16Array(n), b = new Uint8Array(n);
+  for (let i = 0, j = 0; i < n; i++, j += 4) { fy[i] = (d[j] << 8) | d[j + 1]; b[i] = d[j + 2]; }
+  RAS[vp] = {fy, b, who: null, fill: null};
+  return RAS[vp];
+}
+async function loadWho(vp) {
+  const r = await loadVP(vp);
+  if (r.who) return r;
+  const d = await loadPNG(`data/raster_${vp}_who.png`);
+  const n = RS * RS; r.who = new Uint16Array(n); r.fill = new Uint8Array(n);
+  for (let i = 0, j = 0; i < n; i++, j += 4) { r.who[i] = (d[j] << 8) | d[j + 1]; r.fill[i] = d[j + 2]; }
+  return r;
+}
+
+// colour state of a pixel at year t for one viewpoint: 0 unknown, 1 known
+function knownPix(r, lostT, i, T) {
+  const f = r.fy[i]; if (f > T) return 0;
+  const li = r.b[i] >> 1; if (!li) return 1;
+  const L = lostT[li - 1]; const lo = L[0] + OFF, rg = L[1] == null ? 1e9 : L[1] + OFF;
+  return (T >= lo && T < rg) ? 0 : 1;
+}
+const hex = h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+const C_LAND = hex("#ece4d4"), C_SEA = hex("#4f7fae"), C_DARK = hex("#1b1b1b");
+const pack = c => (255 << 24) | (c[2] << 16) | (c[1] << 8) | c[0];
+const P_LAND = pack(C_LAND), P_SEA = pack(C_SEA), P_DARK = pack(C_DARK);
+const mix = (a, b, t) => a.map((v, k) => Math.round(v * (1 - t) + b[k] * t));
+const P_VP = {}; for (const v of VPS) { P_VP[v] = [pack(mix(C_LAND, hex(VPC[v]), .78)), pack(mix(C_SEA, hex(VPC[v]), .62))]; }
+
+const off = document.createElement("canvas"); off.width = RS; off.height = RS;
+const octx = off.getContext("2d");
+const img = octx.createImageData(RS, RS); const px = new Uint32Array(img.data.buffer);
+let EV = null;    // events for the current mode: {order: Uint32Array, start: Int32Array}
+function colourAt(i, T) {
+  if (cur.vp !== "all") {
+    const k = K(cur.vp), r = RAS[k]; return knownPix(r, SITE.lost[k], i, T) ? ((r.b[i] & 1) ? P_LAND : P_SEA) : P_DARK;
+  }
+  let best = null, by = 1e9;
+  for (const v of VPS) { const r = RAS[K(v)]; if (r && knownPix(r, SITE.lost[K(v)], i, T) && r.fy[i] < by) { by = r.fy[i]; best = v; } }
+  if (!best) return P_DARK;
+  return P_VP[best][(RAS.europe.b[i] & 1) ? 0 : 1];
+}
+function buildEvents() {
+  const vps = (cur.vp === "all" ? VPS : [cur.vp]).map(K), NB = 4600, cnt = new Int32Array(NB + 1);
+  const add = (cb) => { for (const v of vps) { const r = RAS[v], L = SITE.lost[v]; for (let i = 0; i < RS * RS; i++) { const f = r.fy[i]; if (f < NEVERV) { cb(f, i); const li = r.b[i] >> 1; if (li) { const q = L[li - 1]; cb(q[0] + OFF, i); if (q[1] != null) cb(q[1] + OFF, i); } } } } };
+  add((t, i) => cnt[Math.min(t, NB)]++);
+  const start = new Int32Array(NB + 2); for (let t = 0; t <= NB; t++) start[t + 1] = start[t] + cnt[t];
+  const fillp = start.slice(0, NB + 1), order = new Uint32Array(start[NB + 1]);
+  add((t, i) => { order[fillp[Math.min(t, NB)]++] = i; });
+  EV = {order, start, NB};
+}
+let curT = null;
+function paintAll(T) {
+  for (let i = 0; i < RS * RS; i++) px[i] = colourAt(i, T);
+  octx.putImageData(img, 0, 0); curT = T;
+}
+function paintTo(T) {
+  if (curT == null) return paintAll(T);
+  if (T === curT) return;
+  const a = Math.max(0, Math.min(T, curT) + 1), b = Math.min(EV.NB, Math.max(T, curT));
+  let x0 = RS, y0 = RS, x1 = -1, y1 = -1;
+  for (let t = a; t <= b; t++) for (let k = EV.start[t]; k < EV.start[t + 1]; k++) {
+    const i = EV.order[k]; px[i] = colourAt(i, T);
+    const x = i % RS, y = (i / RS) | 0; if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y;
+  }
+  if (x1 >= 0) octx.putImageData(img, 0, 0, x0, y0, x1 - x0 + 1, y1 - y0 + 1);
+  curT = T;
+}
+
+// ---------- map ----------
+const map = L.map("map", {minZoom: .5, maxZoom: 7, zoomSnap: .25, worldCopyJump: false, attributionControl: true, zoomControl: true});
+const fitZ = () => Math.max(.5, Math.floor(4 * Math.log2(document.getElementById("map").clientWidth / 256 * 1.05)) / 4);
+map.setView([22, 15], fitZ());
+map.createPane("ghost").style.zIndex = 420; map.createPane("plabels").style.zIndex = 650;
+const ESRI = "https://server.arcgisonline.com/ArcGIS/rest/services/";
+const baseTiles = L.tileLayer(ESRI + "World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}", {maxZoom: 7, maxNativeZoom: 13, attribution: "Relief © Esri"});
+const LY = {base: false, dark: 100, coast: false, borders: false, names: false, routes: true, trails: true, labels: true, grid: false};
+const Stage = L.Canvas.extend({
+  options: {padding: .2},
+  _update() { L.Canvas.prototype._update.call(this); this.drawAll(); },
+  drawAll() {
+    const ctx = this._ctx, b = this._bounds; if (!ctx || !b) return;
+    const m = L.Browser.retina ? 2 : 1;
+    ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, this._container.width, this._container.height); ctx.restore();
+    if (!SITE) return;
+    const z = map.getZoom(), W = 256 * Math.pow(2, z), org = map.getPixelOrigin();
+    const tl = map.project([MERC, -180], z).subtract(org);
+    ctx.save(); ctx.imageSmoothingEnabled = z < 3.5; ctx.globalAlpha = LY.base ? LY.dark / 100 : 1;
+    for (let k = -1; k <= 1; k++) {
+      const x = tl.x + k * W; if (x > b.max.x || x + W < b.min.x) continue;
+      ctx.drawImage(off, x, tl.y, W, W);
+    }
+    ctx.restore();
+    drawRoutes(ctx, z, W, org, b);
+  }
+});
+const stage = new Stage({pane: "overlayPane"}); stage.addTo(map);
+const ghostR = L.canvas({pane: "ghost", padding: .2});
+let coastL = null, bordersL = null, namesL = null, gridL = null;
+
+// ---------- routes and labels ----------
+let HIT = [];
+function journeysNow() { return cur.vp === "all" ? Jn : Jn.filter(j => j.v === cur.vp); }
+function activeWin(j) { return posOf(cur.year) <= posOf(j.e) + .013; }
+function drawRoutes(ctx, z, W, org, b) {
+  HIT = [];
+  if (!LY.routes) return;
+  const t = cur.year, pos = posOf(t), labs = [], boxes = [];
+  ctx.save(); ctx.lineJoin = "round"; ctx.lineCap = "round";
+  const scale = W / 360;
+  for (const j of journeysNow()) {
+    if (j.s > t || j.m === "base" || j.m === "survey") continue;
+    const active = activeWin(j);
+    if (!active && !LY.trails) continue;
+    const p = j.p, pts = [];
+    for (let i = 0; i < p.length; i += 3) {
+      if (p[i + 2] > t) { if (i > 0 && p[i - 1] < p[i + 2]) { const f = (t - p[i - 1]) / (p[i + 2] - p[i - 1]); pts.push([p[i - 3] + f * (p[i] - p[i - 3]), p[i - 2] + f * (p[i + 1] - p[i - 2])]); } break; }
+      pts.push([p[i], p[i + 1]]);
+    }
+    if (!pts.length) continue;
+    const col = cur.vp === "all" ? VPC[j.v] : CENT[((Math.floor(j.s / 100) % 7) + 7) % 7];
+    for (let k = -1; k <= 1; k++) {
+      const sp = pts.map(q => { const pp = map.project([q[1], q[0]], z); return [pp.x - org.x + k * W, pp.y - org.y]; });
+      const xs = sp.map(q => q[0]); if (Math.max(...xs) < b.min.x - 50 || Math.min(...xs) > b.max.x + 50) continue;
+      ctx.beginPath(); sp.forEach((q, i) => i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1]));
+      if (sp.length === 1) ctx.arc(sp[0][0], sp[0][1], 2, 0, 7);
+      ctx.strokeStyle = col; ctx.globalAlpha = active ? 1 : .32; ctx.lineWidth = active ? 2.2 : 1; ctx.stroke();
+      HIT.push({j, sp});
+      if (active && LY.labels) labs.push({j, x: sp[sp.length - 1][0], y: sp[sp.length - 1][1], col, a: Math.max(.25, Math.min(1, (posOf(j.e) + .013 - pos) / .006))});
+    }
+  }
+  if (LY.labels) {
+    labs.sort((a, b) => b.j.a - a.j.a);
+    ctx.font = "600 12px 'IBM Plex Mono', monospace"; ctx.textBaseline = "middle";
+    for (const l of labs.slice(0, 60)) {
+      const w = ctx.measureText(l.j.l).width + 8, bx = [l.x + 6, l.y - 9, l.x + 6 + w, l.y + 9];
+      if (boxes.some(o => !(bx[2] < o[0] || bx[0] > o[2] || bx[3] < o[1] || bx[1] > o[3]))) continue;
+      boxes.push(bx);
+      ctx.globalAlpha = l.a; ctx.fillStyle = "rgba(10,10,10,.72)"; ctx.fillRect(bx[0], bx[1], w, 18);
+      ctx.fillStyle = l.col; ctx.fillRect(bx[0], bx[1], 3, 18);
+      ctx.fillStyle = "#fff"; ctx.fillText(l.j.l, bx[0] + 6, l.y);
+      ctx.beginPath(); ctx.arc(l.x, l.y, 3, 0, 7); ctx.fill();
+    }
+  }
+  ctx.restore();
+}
+
+// ---------- year, HUD ----------
+function setPos(p, fromSlider, exact) {
+  cur.pos = Math.max(0, Math.min(1, p)); cur.year = exact != null ? exact : Math.round(yearOf(cur.pos)); if (cur.year === 0) cur.year = 1;
+  if (!fromSlider) $("#slider").value = Math.round(cur.pos * 1000);
+  $("#year").innerHTML = yrBig(cur.year);
+  const s = SITE.series[cur.vp === "all" ? (cur.surv ? "all" : "all_j") : K(cur.vp)], i = Math.max(0, Math.min(s.land.length - 1, cur.year - SITE.y0));
+  const lp = s.land[i] / 100, sp = s.surface[i] / 100;
+  $("#fl").style.width = lp + "%"; $("#fs").style.width = sp + "%";
+  $("#pl").textContent = lp.toFixed(lp < 10 ? 1 : 0) + "%"; $("#ps").textContent = sp.toFixed(sp < 10 ? 1 : 0) + "%";
+  paintTo(cur.year + OFF); stage.drawAll(); showMoment();
+}
+function showMoment() {
+  const M = SITE.moments.filter(m => (m.v === cur.vp || cur.vp === "all") && m.y <= cur.year);
+  const m = M[M.length - 1];
+  $("#moment").innerHTML = m ? `<b>${esc(yr(m.y))} · ${esc(m.t)}.</b> ${esc(m.x)}` : (cur.vp === "polynesia" || cur.vp === "all" ? "" : `Nothing recorded yet for ${esc(VPN[cur.vp])}. Press play.`);
+}
+function frame(ts) {
+  if (!playing) return;
+  const dt = Math.min(.1, (ts - (lastT || ts)) / 1000); lastT = ts;
+  let p = cur.pos + dt * speed / 90;
+  if (p >= 1) { p = 1; togglePlay(false); }
+  setPos(p); requestAnimationFrame(frame);
+}
+function togglePlay(on) {
+  playing = on == null ? !playing : on; $("#play").innerHTML = playing ? "&#10073;&#10073;" : "&#9654;"; $("#play").setAttribute("aria-label", playing ? "Pause" : "Play");
+  if (playing) { if (cur.pos >= 1) setPos(0); lastT = 0; requestAnimationFrame(frame); }
+}
+async function setVP(vp) {
+  togglePlay(false);
+  $("#loading").hidden = false; $("#loading").textContent = "Loading...";
+  if (vp === "all") await Promise.all(VPS.map(v => loadVP(K(v)))); else await loadVP(K(vp));
+  cur.vp = vp; buildEvents(); curT = null;
+  document.querySelectorAll("#vpRow .cbtn").forEach(b => b.setAttribute("aria-pressed", b.dataset.v === vp));
+  $("#title").firstChild.textContent = vp === "all" ? "Four points of view compared" : `The world as recorded for ${VPN[vp]}`;
+  $("#subtitle").textContent = {europe: "Land and sea within reach of written accounts that reached European readers", islamic: "Arabic, Persian and Ottoman geographers and travellers", china: "Chinese envoys, pilgrims, fleets and geographers", polynesia: "Austronesian and Polynesian voyaging, dated by archaeology, not writing", all: "Each lit cell coloured by the tradition that recorded it first"}[vp];
+  legend(); $("#loading").hidden = true;
+  setPos(cur.pos);
+}
+function legend() {
+  const L = cur.vp === "all" ? VPS.map(v => `<span><i style="background:${VPC[v]}"></i>${VPS_[v]}</span>`).join("") :
+    `<span><i style="background:#ece4d4"></i>Land known</span><span><i style="background:#4f7fae"></i>Sea known</span><span><i style="background:#1b1b1b"></i>Not yet recorded</span><span><i class="ln" style="border-color:#ffb347"></i>Routes, coloured by century</span>`;
+  $("#legend").innerHTML = L;
+}
+
+// ---------- clicks ----------
+function pixOf(ll) {
+  let lon = ((ll.lng + 180) % 360 + 360) % 360 - 180, lat = Math.max(-MERC, Math.min(MERC, ll.lat));
+  const x = (lon + 180) / 360 * RS, yy = Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360));
+  const y = (1 - yy / Math.PI) / 2 * RS;
+  return Math.min(RS - 1, Math.floor(y)) * RS + Math.min(RS - 1, Math.floor(x));
+}
+function flag(st) { const s = STATUS[st] || STATUS.unsourced; return `<span class="flag ${s[0]}">${s[1]}</span>`; }
+function jPopup(j) {
+  const src = (j.src || []).map((u, k) => `<a href="${esc(u)}" target="_blank" rel="noopener">${k ? "more" : "source"}</a>`).join(" · ");
+  return `<p class="pt">${esc(j.n)}</p><p class="ps">${esc(yr(j.s))}${j.e !== j.s ? " to " + esc(yr(j.e)) : ""} · ${esc(j.sp || "")} · ${esc(j.m === "survey" ? "survey and settlement layer" : j.m)}${j.c === "low" ? " · route uncertain" : ""}</p>` +
+    `<p>${esc(j.sum)}</p>${j.g ? `<p><b>Guides:</b> ${esc(j.g)}</p>` : ""}${j.lost ? `<p>Knowledge lost to ${esc(VPN[j.v])} by ${esc(yr(j.lost))}.</p>` : ""}` +
+    `<p>First lit: ${mkm(j.a)} million km² · ${flag(j.st)}</p><p>${src}</p>`;
+}
+function nearRoute(cp) {
+  let best = null, bd = 7;
+  const dseg = (p, a, b) => { const dx = b[0] - a[0], dy = b[1] - a[1], l = dx * dx + dy * dy; let t = l ? ((p.x - a[0]) * dx + (p.y - a[1]) * dy) / l : 0; t = Math.max(0, Math.min(1, t)); return Math.hypot(p.x - a[0] - t * dx, p.y - a[1] - t * dy); };
+  const lp = map.containerPointToLayerPoint(cp);
+  for (const h of HIT) for (let i = 0; i < h.sp.length; i++) { const d = dseg(lp, h.sp[i], h.sp[Math.min(i + 1, h.sp.length - 1)]); if (d < bd) { bd = d; best = h.j; } }
+  return best;
+}
+async function cellInfo(ll, title) {
+  const i = pixOf(ll); const rows = [];
+  const vps = VPS;
+  for (const v of vps) {
+    const r = await loadWho(K(v)); const f = r.fy[i];
+    if (f >= NEVERV) { rows.push(`<tr><td><span class="vpdot" style="background:${VPC[v]}"></span>${VPS_[v]}</td><td>not recorded by 1960</td></tr>`); continue; }
+    const j = Jn[r.who[i] - 1];
+    rows.push(`<tr><td><span class="vpdot" style="background:${VPC[v]}"></span>${VPS_[v]}</td><td><b>${esc(yr(f - OFF))}</b>${j ? `, ${r.fill[i] ? "enclosed by journeys up to " : ""}<a href="#" data-j="${j.id}">${esc(j.n)}</a> ${flag(j.st)}` : ""}</td></tr>`);
+  }
+  const r0 = RAS[K(cur.vp === "all" ? "europe" : cur.vp)], f0 = r0.fy[i], j0 = r0.who ? Jn[r0.who[i] - 1] : null;
+  const later = f0 - OFF > cur.year ? `Not yet recorded for ${VPN[cur.vp]} in ${esc(yr(cur.year))}. ` : "";
+  const head = cur.vp === "all" ? "" : (f0 < NEVERV && j0 ? `${later}First recorded for ${VPN[cur.vp]} by ${esc(j0.n)}, ${esc(yr(f0 - OFF))}` : `Not recorded for ${VPN[cur.vp]} by 1960`);
+  $("#side").innerHTML = `<div class="big">${esc(title || (ll.lat.toFixed(1) + "°, " + (((ll.lng + 180) % 360 + 360) % 360 - 180).toFixed(1) + "°"))}</div>${head ? `<div class="sub">${head}</div>` : ""}<table>${rows.join("")}</table><div class="sub">Dark does not mean unknown to the people who lived there. Years are when a journey in the gazetteer passed within reach.</div>`;
+  $("#side").querySelectorAll("a[data-j]").forEach(a => a.onclick = ev => { ev.preventDefault(); showJourney(a.dataset.j); });
+  return head;
+}
+map.on("click", async ev => {
+  const j = nearRoute(ev.containerPoint);
+  if (j) { L.popup({maxWidth: 300}).setLatLng(ev.latlng).setContent(jPopup(j)).openOn(map); return; }
+  const head = await cellInfo(ev.latlng);
+  if (head) L.popup({maxWidth: 260}).setLatLng(ev.latlng).setContent(`<p>${head}.</p>`).openOn(map);
+});
+async function showJourney(id) {
+  const j = Jn.find(x => x.id === id); if (!j) return;
+  if (cur.vp !== j.v && cur.vp !== "all") await setVP(j.v);
+  setPos(posOf(Math.min(j.e, 1960)), false, Math.min(j.e, 1960));
+  const ll = []; for (let i = 0; i < j.p.length; i += 3) ll.push([j.p[i + 1], j.p[i]]);
+  map.fitBounds(L.latLngBounds(ll).pad(.3), {maxZoom: 5});
+  const mid = ll[Math.floor(ll.length / 2)];
+  setTimeout(() => L.popup({maxWidth: 300}).setLatLng(mid).setContent(jPopup(j)).openOn(map), 350);
+  $("#stage").scrollIntoView({behavior: "smooth", block: "start"});
+}
+
+// ---------- layers panel ----------
+function layersPanel() {
+  const w = L.DomUtil.create("div", "lyrWrap"); L.DomEvent.disableClickPropagation(w); L.DomEvent.disableScrollPropagation(w);
+  w.innerHTML = `<button class="lyrBtn" aria-expanded="false">Map layers</button><div class="lyrPanel" hidden>
+  <div class="hd">Underneath</div>
+  <div class="r"><label><input type="checkbox" data-l="base"> Relief base map</label><div class="sub">Show the land underneath the dark</div></div>
+  <div class="r"><label>Darkness</label><input type="range" min="30" max="100" value="100" data-l="dark" aria-label="Opacity of the lit and dark layer"></div>
+  <div class="r"><label><input type="checkbox" data-l="coast"> Modern coastlines</label></div>
+  <div class="hd">Orientation</div>
+  <div class="r"><label><input type="checkbox" data-l="borders"> Modern borders</label></div>
+  <div class="r"><label><input type="checkbox" data-l="names"> Place names</label></div>
+  <div class="r"><label><input type="checkbox" data-l="grid"> Analysis grid</label><div class="sub">H3 hexagons, zoom in to see them</div></div>
+  <div class="hd">Journeys</div>
+  <div class="r"><label><input type="checkbox" data-l="routes" checked> Routes</label></div>
+  <div class="r"><label><input type="checkbox" data-l="trails" checked> Earlier routes, faint</label></div>
+  <div class="r"><label><input type="checkbox" data-l="labels" checked> Leader labels</label></div></div>`;
+  $("#map").appendChild(w);
+  const btn = w.querySelector(".lyrBtn"), pan = w.querySelector(".lyrPanel");
+  btn.onclick = () => { const o = pan.hidden; pan.hidden = !o; btn.setAttribute("aria-expanded", o); };
+  w.querySelectorAll("input").forEach(inp => inp.addEventListener("input", () => { const k = inp.dataset.l; LY[k] = inp.type === "checkbox" ? inp.checked : +inp.value; applyLayers(k); }));
+}
+async function lines(url) { const r = await fetch(url); const d = await r.json(); return d.map(a => { const o = []; for (let i = 0; i < a.length; i += 2) o.push([a[i + 1], a[i]]); return o; }); }
+async function applyLayers(k) {
+  if (k === "base") LY.base ? baseTiles.addTo(map) : map.removeLayer(baseTiles);
+  if (k === "coast") { if (LY.coast) { coastL = coastL || L.polyline(await lines("data/coast.json"), {renderer: ghostR, color: "#9a9a9a", weight: .7, opacity: .7, interactive: false}); coastL.addTo(map); } else if (coastL) map.removeLayer(coastL); }
+  if (k === "borders") { if (LY.borders) { bordersL = bordersL || L.polyline(await lines("data/borders.json"), {renderer: ghostR, color: "#c25b4a", weight: .8, opacity: .8, interactive: false}); bordersL.addTo(map); } else if (bordersL) map.removeLayer(bordersL); }
+  if (k === "names") { if (LY.names) { namesL = namesL || L.layerGroup(SITE.labels.map(p => L.tooltip({permanent: true, direction: "right", className: "plabel", pane: "plabels", offset: [2, 0]}).setLatLng([p[2], p[1]]).setContent(esc(p[0])))); namesL.addTo(map); } else if (namesL) map.removeLayer(namesL); }
+  if (k === "grid") drawGrid();
+  stage.drawAll();
+}
+let h3lib = null;
+async function drawGrid() {
+  if (gridL) { map.removeLayer(gridL); gridL = null; }
+  if (!LY.grid) return;
+  if (map.getZoom() < 4.5) { gridL = L.layerGroup().addTo(map); return; }
+  if (!h3lib) await new Promise((res, rej) => { const s = document.createElement("script"); s.src = "https://cdn.jsdelivr.net/npm/h3-js@4.1.0/dist/h3-js.umd.js"; s.onload = () => { h3lib = window.h3; res(); }; s.onerror = rej; document.head.appendChild(s); });
+  const b = map.getBounds(), w = Math.max(-180, b.getWest()), e = Math.min(180, b.getEast());
+  const cells = h3lib.polygonToCells([[b.getSouth(), w], [b.getSouth(), e], [b.getNorth(), e], [b.getNorth(), w]], 4).slice(0, 6000);
+  gridL = L.polyline(cells.map(c => { const r = h3lib.cellToBoundary(c); r.push(r[0]); return r; }), {renderer: ghostR, color: "#888", weight: .5, opacity: .6, interactive: false}).addTo(map);
+}
+map.on("moveend", () => { if (LY.grid) drawGrid(); });
+
+// ---------- search ----------
+function setupSearch() {
+  const q = $("#q"), sug = $("#sug"); let hits = [], sel = -1;
+  const P = SITE.places.map(p => ({p, k: p[0].normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase()}));
+  const render = () => { sug.innerHTML = hits.map((h, k) => `<li role="option" aria-selected="${k === sel}" data-k="${k}">${esc(h.p[0])} <span>${h.p[1] === "country" ? "country" : esc(h.p[1])}</span></li>`).join(""); sug.style.display = hits.length ? "block" : "none"; };
+  q.addEventListener("input", () => { const s = q.value.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim(); sel = -1; hits = s.length < 2 ? [] : P.filter(x => x.k.startsWith(s)).concat(P.filter(x => !x.k.startsWith(s) && x.k.includes(s))).slice(0, 8); render(); });
+  const go = h => { sug.style.display = "none"; q.value = h.p[0]; const ll = L.latLng(h.p[3], h.p[2]); map.setView(ll, Math.max(map.getZoom(), h.p[1] === "country" ? 3.5 : 4.5)); cellInfo(ll, h.p[0] + (h.p[1] === "country" ? "" : ", " + h.p[1])).then(head => { if (head) L.popup({maxWidth: 260}).setLatLng(ll).setContent(`<p><b>${esc(h.p[0])}</b><br>${head}.</p>`).openOn(map); }); };
+  q.addEventListener("keydown", e => { if (e.key === "ArrowDown") { sel = Math.min(hits.length - 1, sel + 1); render(); e.preventDefault(); } else if (e.key === "ArrowUp") { sel = Math.max(0, sel - 1); render(); e.preventDefault(); } else if (e.key === "Enter" && hits.length) { go(hits[Math.max(0, sel)]); e.preventDefault(); } else if (e.key === "Escape") { sug.style.display = "none"; } });
+  sug.addEventListener("click", e => { const li = e.target.closest("li"); if (li) go(hits[+li.dataset.k]); });
+  document.addEventListener("click", e => { if (!e.target.closest(".searchbox")) sug.style.display = "none"; });
+}
+
+// ---------- charts ----------
+const tip = $("#tip");
+function showTip(ev, html) { tip.innerHTML = html; tip.style.display = "block"; const r = document.body.getBoundingClientRect(); tip.style.left = (ev.clientX - r.left) + "px"; tip.style.top = (ev.clientY - r.top) + "px"; }
+const hideTip = () => tip.style.display = "none";
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+function curve() {
+  const el = $("#curve"), W = 700, H = 330, m = {l: 44, r: 14, t: 12, b: 34};
+  const X = y => m.l + posOf(y) * (W - m.l - m.r), Y = v => H - m.b - v / 90 * (H - m.t - m.b);
+  const cols = {europe: css("--eu"), islamic: css("--is"), china: css("--ch"), polynesia: css("--po")};
+  const LINES = [["europe", "land", "europe", 2.6, ""], ["europe_j", "land", "europe", 1.6, "5 4"], ["islamic", "land", "islamic", 2, ""], ["china", "land", "china", 2, ""], ["polynesia", "surface", "polynesia", 2, ""]];
+  const NM = {europe: "Europe, land", europe_j: "Europe, journeys only", islamic: "Islamic world, land", china: "China, land", polynesia: "Polynesia, sea and land"};
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Line chart of the share of the world known to each tradition by year">`;
+  for (let v = 0; v <= 80; v += 20) s += `<line x1="${m.l}" x2="${W - m.r}" y1="${Y(v)}" y2="${Y(v)}" stroke="${css("--rule")}"/><text class="lab" x="${m.l - 6}" y="${Y(v) + 4}" text-anchor="end" font-size="11" style="fill:${css("--muted")}">${v}%</text>`;
+  for (const y of [-2000, -1000, 1, 1000, 1400, 1500, 1600, 1700, 1800, 1900, 1960]) s += `<line x1="${X(y)}" x2="${X(y)}" y1="${H - m.b}" y2="${H - m.b + 4}" stroke="${css("--muted")}"/><text x="${X(y)}" y="${H - m.b + 17}" text-anchor="middle" font-size="${y < 1400 ? 9.5 : 10.5}" style="fill:${css("--muted")}">${y < 0 ? (-y) + " BC" : y === 1 ? "AD 1" : y}</text>`;
+  for (const [k, f, c, w, d] of LINES) {
+    const a = SITE.series[k][f]; let p = "";
+    for (let y = SITE.y0; y <= SITE.y1; y += (y < 1400 ? 10 : 2)) p += (p ? "L" : "M") + X(y).toFixed(1) + "," + Y(a[y - SITE.y0] / 100).toFixed(1);
+    s += `<path d="${p}" fill="none" stroke="${cols[c]}" stroke-width="${w}" ${d ? `stroke-dasharray="${d}"` : ""}/>`;
+  }
+  s += `<line id="cv" y1="${m.t}" y2="${H - m.b}" stroke="${css("--fg")}" stroke-dasharray="3 3" opacity="0"/><rect x="${m.l}" y="${m.t}" width="${W - m.l - m.r}" height="${H - m.t - m.b}" fill="transparent" id="cvr"/></svg>`;
+  el.innerHTML = s;
+  $("#curveLegend").innerHTML = LINES.map(([k, f, c, w, d]) => `<span><i class="ln" style="border-color:${cols[c]};${d ? "border-top-style:dashed" : ""}"></i>${NM[k]}</span>`).join("");
+  const svg = el.querySelector("svg");
+  el.querySelector("#cvr").addEventListener("mousemove", ev => {
+    const r = svg.getBoundingClientRect(), x = (ev.clientX - r.left) / r.width * W; const y = Math.round(yearOf((x - m.l) / (W - m.l - m.r)));
+    const ln = el.querySelector("#cv"); ln.setAttribute("x1", X(y)); ln.setAttribute("x2", X(y)); ln.setAttribute("opacity", 1);
+    showTip(ev, `<b>${yr(y)}</b><br>` + LINES.map(([k, f]) => `${NM[k]}: ${(SITE.series[k][f][y - SITE.y0] / 100).toFixed(1)}%`).join("<br>"));
+  });
+  el.querySelector("#cvr").addEventListener("mouseleave", () => { hideTip(); el.querySelector("#cv").setAttribute("opacity", 0); });
+}
+function beforeChart() {
+  const B = R.before_europe, vs = ["islamic", "china", "polynesia"], W = 700, H = 150, m = {l: 120, r: 70};
+  const mx = Math.max(...vs.map(v => B[v].km2)) / 1e6;
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Bar chart of area known to other traditions before Europe">`;
+  vs.forEach((v, k) => {
+    const y = 10 + k * 45, wl = B[v].land_km2 / 1e6 / mx * (W - m.l - m.r), ws = B[v].sea_km2 / 1e6 / mx * (W - m.l - m.r);
+    const c = css({islamic: "--is", china: "--ch", polynesia: "--po"}[v]);
+    s += `<text x="${m.l - 8}" y="${y + 17}" text-anchor="end" font-size="12">${VPS_[v]}</text><rect x="${m.l}" y="${y}" width="${wl}" height="26" fill="${c}"/><rect x="${m.l + wl}" y="${y}" width="${ws}" height="26" fill="${c}" opacity=".45"/><text x="${m.l + wl + ws + 6}" y="${y + 17}" font-size="12">${mkm(B[v].km2)}</text>`;
+  });
+  s += `</svg>`; $("#beforeChart").innerHTML = s + `<div class="legend"><span><i style="background:var(--fg)"></i>Land</span><span><i style="background:var(--fg);opacity:.45"></i>Sea</span></div>`;
+}
+function tables() {
+  const rows = R.biggest.all.map(r => [r, "all"]).concat(R.biggest.land.map(r => [r, "land"]));
+  $("#bigTable").innerHTML = `<tr><th>Journey</th><th class="r">Years</th><th class="r">New area, M km²</th><th class="r">of it land</th></tr>` +
+    rows.filter((x, k, a) => a.findIndex(y => y[0].id === x[0].id) === k).sort((a, b) => b[0].new_km2 - a[0].new_km2).map(([r]) => `<tr data-j="${r.id}"><td>${esc(r.leader)}</td><td class="r">${esc(yr(r.start))}${r.end !== r.start ? " to " + esc(yr(r.end)) : ""}</td><td class="r">${mkm(r.new_km2)}</td><td class="r">${mkm(r.new_land_km2)}</td></tr>`).join("");
+  $("#bigTable").querySelectorAll("tr[data-j]").forEach(tr => tr.onclick = () => showJourney(tr.dataset.j));
+  const N = {main: "Main run (journeys plus surveys)", journeys_only: "Journeys only", radius_half: "Radii halved", radius_1p5: "Radii x 1.5", no_fill: "No pocket fill", fill_25: "Fill up to 25 cells", fill_400: "Fill up to 400 cells", confirmed_only: "Confirmed entries only", no_base: "No starting worlds"};
+  $("#sensTable").innerHTML = `<tr><th>Variant</th><th class="r">1492</th><th class="r">1800</th><th class="r">1900</th><th class="r">1960</th><th class="r">25% by</th><th class="r">50% by</th></tr>` +
+    Object.entries(R.sensitivity).map(([k, v]) => `<tr><td>${N[k]}</td><td class="r">${v.land["1492"]}%</td><td class="r">${v.land["1800"]}%</td><td class="r">${v.land["1900"]}%</td><td class="r">${v.land["1960"]}%</td><td class="r">${v.milestones["25"] == null ? "not reached" : yr(v.milestones["25"])}</td><td class="r">${v.milestones["50"] == null ? "not reached" : yr(v.milestones["50"])}</td></tr>`).join("");
+}
+
+// ---------- start ----------
+(async function () {
+  try {
+    SITE = await (await fetch("data/site.json")).json();
+  } catch (e) { $("#loading").textContent = "Could not load the map data."; return; }
+  KN = SITE.knots; Jn = SITE.journeys;
+  $("#vpRow").innerHTML = VPS.concat(["all"]).map(v => `<button class="cbtn" data-v="${v}" aria-pressed="false">${v !== "all" ? `<span class="vpdot" style="background:${VPC[v]}"></span>` : ""}${VPS_[v]}</button>`).join("");
+  $("#vpRow").querySelectorAll(".cbtn").forEach(b => b.onclick = () => setVP(b.dataset.v));
+  $("#layerRow").querySelectorAll(".cbtn").forEach(b => b.onclick = () => { cur.surv = b.dataset.s === "1"; $("#layerRow").querySelectorAll(".cbtn").forEach(x => x.setAttribute("aria-pressed", x === b)); setVP(cur.vp); });
+  $("#momRow").innerHTML = SITE.moments.map((m, k) => `<button class="cbtn" data-k="${k}">${esc(yr(m.y))} ${esc(m.t)}</button>`).join("");
+  $("#momRow").querySelectorAll(".cbtn").forEach(b => b.onclick = async () => { const m = SITE.moments[+b.dataset.k]; if (cur.vp !== m.v && cur.vp !== "all") await setVP(m.v); setPos(posOf(m.y), false, m.y); });
+  $("#slider").addEventListener("input", e => { togglePlay(false); setPos(+e.target.value / 1000, true); });
+  $("#play").onclick = () => togglePlay();
+  const SP = [.5, 1, 2, 4]; $("#speed").onclick = () => { speed = SP[(SP.indexOf(speed) + 1) % SP.length]; $("#speed").textContent = speed + "×"; };
+  layersPanel(); setupSearch(); curve(); beforeChart(); tables();
+  cur.pos = posOf(1400);
+  await setVP("europe");
+  loadWho("europe"); loadVP("europe_j");
+})();
+$("#theme").onclick = () => { const r = document.documentElement, d = r.getAttribute("data-theme") === "dark" || (!r.getAttribute("data-theme") && matchMedia("(prefers-color-scheme: dark)").matches); r.setAttribute("data-theme", d ? "light" : "dark"); if (SITE) { curve(); beforeChart(); } };
+</script>
+<!-- map-fullscreen v1 -->
+<style id="mfs-style">
+.mfs-btn{position:absolute;top:10px;right:10px;z-index:1001;width:34px;height:34px;border:2px solid rgba(0,0,0,.25);border-radius:4px;background:#fff;color:#222;cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+.mfs-btn:hover{background:#f2f2f2}
+.mfs-btn svg{width:18px;height:18px}
+.mfs-host.mfs-btn-left .mfs-btn{right:auto;left:54px}
+.mfs-fake{position:fixed!important;inset:0!important;width:100vw!important;height:100vh!important;height:100dvh!important;max-width:none!important;max-height:none!important;margin:0!important;z-index:100000!important;border-radius:0!important}
+html.mfs-lock,html.mfs-lock body{overflow:hidden!important}
+:fullscreen.mfs-host{width:100vw!important;height:100vh!important;max-width:none!important;max-height:none!important;margin:0!important;border-radius:0!important}
+</style>
+<script id="mfs-script">
+(function(){
+  var ICON_OPEN='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>';
+  var ICON_CLOSE='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg>';
+  function poke(){setTimeout(function(){window.dispatchEvent(new Event('resize'));},60);setTimeout(function(){window.dispatchEvent(new Event('resize'));},400);}
+  function realFS(){return document.fullscreenElement||document.webkitFullscreenElement;}
+  function add(el){
+    if(el.__mfs)return; el.__mfs=1;
+    var cs=getComputedStyle(el); if(cs.position==='static')el.style.position='relative';
+    el.classList.add('mfs-host');
+    // avoid clashing with a top-right Leaflet control (e.g. "Map layers")
+    var tr=el.querySelector('.leaflet-top.leaflet-right');
+    if(tr&&tr.children.length){ el.classList.add('mfs-btn-left'); }
+    var b=document.createElement('button'); b.type='button'; b.className='mfs-btn';
+    b.title='Full screen map'; b.setAttribute('aria-label','Full screen map'); b.innerHTML=ICON_OPEN;
+    ['click','dblclick','mousedown','touchstart','wheel'].forEach(function(t){b.addEventListener(t,function(e){e.stopPropagation();},{passive:t!=='click'});});
+    function setIcon(on){b.innerHTML=on?ICON_CLOSE:ICON_OPEN;b.title=on?'Exit full screen':'Full screen map';b.setAttribute('aria-label',b.title);}
+    function exitFake(){el.classList.remove('mfs-fake');document.documentElement.classList.remove('mfs-lock');setIcon(false);poke();}
+    b.addEventListener('click',function(e){
+      e.preventDefault();
+      if(el.classList.contains('mfs-fake')){exitFake();return;}
+      if(realFS()){(document.exitFullscreen||document.webkitExitFullscreen).call(document);return;}
+      var req=el.requestFullscreen||el.webkitRequestFullscreen;
+      if(req){ try{ var p=req.call(el); if(p&&p.catch)p.catch(function(){el.classList.add('mfs-fake');document.documentElement.classList.add('mfs-lock');setIcon(true);poke();}); }catch(err){el.classList.add('mfs-fake');document.documentElement.classList.add('mfs-lock');setIcon(true);poke();} }
+      else { el.classList.add('mfs-fake');document.documentElement.classList.add('mfs-lock');setIcon(true);poke(); }
+    });
+    document.addEventListener('keydown',function(e){if(e.key==='Escape'&&el.classList.contains('mfs-fake'))exitFake();});
+    ['fullscreenchange','webkitfullscreenchange'].forEach(function(t){document.addEventListener(t,function(){setIcon(realFS()===el);poke();});});
+    el.appendChild(b);
+  }
+  function scan(){
+    var els=document.querySelectorAll('[data-fullscreen-map], .leaflet-container, .maplibregl-map, .mapboxgl-map');
+    els.forEach(function(el){
+      if(el.closest('.mfs-host')&&!el.classList.contains('mfs-host'))return;
+      var r=el.getBoundingClientRect(); if(r.width<200||r.height<150)return;
+      add(el);
+    });
+  }
+  function start(){scan(); var n=0; var t=setInterval(function(){scan(); if(++n>20)clearInterval(t);},500);}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start); else start();
+})();
+</script>
+<!-- /map-fullscreen -->
+
+</body>
+</html>
