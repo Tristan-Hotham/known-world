@@ -1,0 +1,144 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage{fontspec}
+\setmainfont{TeX Gyre Pagella}
+\newfontfamily\headfont{Inter}[UprightFont=*-ExtraBold,BoldFont=*-ExtraBold,Extension=.otf,Path=/usr/share/fonts/opentype/inter/]
+\usepackage[a4paper,margin=2.3cm]{geometry}
+\usepackage{graphicx,booktabs,float,caption,array,xcolor,longtable}
+\usepackage{xurl}
+\usepackage[hidelinks]{hyperref}
+\usepackage{titlesec}
+\usepackage[round]{natbib}
+\usepackage{setspace}
+\setstretch{1.05}
+\renewcommand{\topfraction}{0.9}
+\renewcommand{\bottomfraction}{0.8}
+\renewcommand{\textfraction}{0.1}
+\renewcommand{\floatpagefraction}{0.75}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.55em}
+\titleformat{\section}{\headfont\Large}{\thesection}{0.8em}{}
+\titleformat{\subsection}{\headfont\large}{\thesubsection}{0.8em}{}
+\captionsetup{font=small,labelfont=bf}
+\urlstyle{same}
+\hypersetup{pdftitle={The Known World},pdfauthor={Tristan Hotham}}
+
+\begin{document}
+\begin{center}
+{\Large\bfseries The Known World\par}
+\vspace{0.4em}
+{\large How much of the Earth each tradition had written about,\\from the Bronze Age to 1960\par}
+\vspace{1.2em}
+{\large Tristan Hotham\par}
+\vspace{0.3em}
+{\small Independent researcher\\
+ORCID: 0000-0003-4931-9349\\
+DOI: {{DOI_LINK}}\par}
+\vspace{0.8em}
+2026
+\end{center}
+
+\begin{quote}
+\small
+\begin{center}\textbf{Abstract}\end{center}
+A popular animation shows the world lighting up as Europeans explored it. I rebuild that idea as a reproducible measurement. A gazetteer of {{data.journeys|int}} dated journey routes, with a coarse layer of {{data.surveys|int}} regions surveyed or settled for Europe, ({{data.waypoints|int}} waypoints), compiled for this study from published accounts, covers four traditions: Europe ({{data.europe_n|int}} journeys, from the Bronze Age Aegean onwards), the Islamic world ({{data.by_viewpoint.islamic|int}}), China ({{data.by_viewpoint.china|int}}) and Polynesian and Austronesian voyaging ({{data.by_viewpoint.polynesia|int}}, dated by archaeology). Each journey lights the cells of an equal-area hexagonal grid ({{grid.cells|int}} H3 cells) within a mode-dependent distance of its route, in the year of the nearest route point; small enclosed pockets are filled, and knowledge flagged as lost is removed. In the main run (journeys plus surveys and settlement) Europe's recorded world covers {{share.europe.150.land|pc1}} of the Earth's land after Ptolemy (AD 150), {{share.europe.1492.land|pc1}} in 1492, {{share.europe.1800.land|pc1}} in 1800 and {{share.europe.1960.land|pc1}} in 1960 ({{journeys_only.share.1960.land|pc1}} from journeys alone); half of the Earth's surface is lit by {{milestones.surface.50|raw}} and half of its land by {{milestones.land.50|raw}}. The nineteenth century adds the most land ({{century_gain.1800|pc1}}), and the fastest decade after 1400 is the {{fastest.land_decade_after_1400|raw}}s. Large areas were recorded first by other traditions: {{before_europe.china.km2|mkm}} million km\textsuperscript{2} by China and {{before_europe.polynesia.km2|mkm}} million km\textsuperscript{2}, mostly ocean, by Polynesian voyagers. Results are sensitive to the reveal distances (Europe's 1960 land share ranges from {{sens_range.land_1960_min|pc1}} to {{sens_range.land_1960_max|pc1}} across variants) and to the coverage of the gazetteer, which is a lower bound in the late period; the shape of the curve is robust.
+
+\textbf{Keywords:} history of exploration; historical geography; travel accounts; Polynesian voyaging; Islamic geography; Chinese geography; H3 grid; open data
+\end{quote}
+
+\section{Introduction}
+The animation ``World exploration from Europe's point of view'', widely shared online, starts from a black globe and lights each region as European voyages reach it. It captures something real, the growth of a written, mapped world, but it has two weaknesses. It leaves Europe's own neighbours dark long after Greek and Roman authors had described them, and it presents one tradition's record as if it were the world's knowledge. Every place on the map was, of course, known to the people who lived there, and most European travellers depended on local guides, pilots and interpreters.
+
+This paper turns the animation into a measurement that can be checked and varied. It asks a narrow question: how much of the Earth's surface lies close to journeys whose accounts reached the readers of a given tradition, year by year? It answers it for Europe, the Islamic world, China and Polynesia, and it reports how the answer depends on the choices made. An interactive version lets readers play the timeline, switch the point of view and inspect any place or route (\url{{{meta.page}}}).
+
+\section{Data}
+\textbf{The gazetteer.} I compiled {{data.journeys|int}} journeys, mostly from English Wikipedia articles and the accounts they cite \citep{wiki}, in eight regional files (Greek and Phoenician; Roman and medieval; Atlantic and Indian Ocean; the Americas; the African interior; overland Asia; the Pacific and the polar regions; other points of view). Each entry gives a leader, sponsor, start and end years, a mode (sea, land, river, sledge, air, or a ``base'' starting world), an ordered route of waypoints each with a year, a one-sentence summary, sources, a route confidence and notes, including named local guides. Sea routes follow the coasts actually sailed, with waypoints at least every 300 km; land and river routes have a waypoint at each named place. {{data.low_conf|int}} routes are marked low confidence because they are reconstructed or disputed. Starting worlds (``base'' entries, {{data.by_mode.base|int}} in all) are dense clouds of points over an area already known at a date, such as the Bronze Age Aegean, the world of Herodotus or Ptolemy's \textit{Geography}; they stop each tradition starting from nothing. {{data.lost_flagged|int}} entries carry a year in which the knowledge was lost (Vinland and Norse Greenland, the Phoenician circumnavigation of Africa, abandoned Pacific islands). Polynesian entries are settlement dates from archaeology and radiocarbon, not written accounts. Table~\ref{tab:data} summarises the composition.
+
+{{TABLE_DATA}}
+
+\textbf{Survey and settlement layer.} Journeys cannot capture the mapping of the world by systematic survey and settlement, which by the late nineteenth century covered most of the interiors that remain dark between routes. For Europe only, I added {{data.surveys|int}} region entries, each a set of Natural Earth first-level divisions (by ISO 3166-2 code) or countries, sometimes clipped to a box around their settled part, lit in a single year between {{data.survey_first|raw}} and {{data.survey_last|raw}}: the year the region's systematic survey or general map was published in Europe, or its settler colonisation was general. Examples are the Mitchell map of the British colonies (1755), the US Public Land Survey by state (1800 to 1895), the Dominion Land Survey of the prairies (1890), the Russian General Land Survey (1800), the Trans-Siberian corridor (1905), the Jesuit survey of China published by d'Anville (1737), the Atlas of India (1870), the Conquest of the Desert in Argentina (1885), the colonial surveys of Australia (1830 to 1880) and the aerial survey of northern Canada (1955). These dates are mine, from general knowledge of the history of cartography; the cited pages were not reread for this layer, and all are marked as not confirmed. The layer is deliberately coarse and leaves the Amazon, the Sahara, central Africa and northern Siberia to the journeys. All results are also given for journeys alone.
+
+\textbf{Merging and validation.} The regional files were merged and checked: latitudes in range, longitudes normalised, waypoint years within the journey's years and non-decreasing, and lone spikes in a route removed. {{data.merged_duplicates|int}} journeys appearing in two files were merged and {{data.renamed|int}} distinct journeys sharing an identifier renamed. Routes crossing the 180 degree meridian are unwrapped before densification and split at the meridian in the published GeoJSON.
+
+\textbf{Source status.} Each journey carries one of four statuses. For part of the gazetteer an automatic check fetched the cited English Wikipedia article and searched its text for the start and end years: {{data.status_pct.years_confirmed|pc1}} of journeys have both years confirmed. {{data.status_pct.read_by_compiler|pc1}} were taken by the compiler from the pages they cite and not rechecked. {{data.status_pct.years_not_confirmed|pc1}} cite an article that lacks one or both years, or have dates partly from general knowledge; {{data.status_pct.unsourced|pc1}} cite a page that could not be read or found. Figure~\ref{fig:status} maps the routes by status. The main results are repeated using only the first two groups ({{data.confirmed_n|int}} journeys).
+
+\textbf{Geography.} Natural Earth 50m land, with the Natural Earth Antarctic ice shelves counted as land (land or permanent ice), countries and populated places \citep{naturalearth}; the H3 discrete global grid \citep{h3}.
+
+\section{Methods}
+\textbf{Grid.} The Earth is divided into the {{grid.cells|int}} cells of H3 resolution {{grid.res|int}} (mean area {{grid.mean_km2|int}} km\textsuperscript{2}, about 42 km across). A cell is land if its centre falls on land: {{grid.land_cells|int}} cells, {{grid.land_mkm2|f1}} million km\textsuperscript{2}. Shares are area-weighted.
+
+\textbf{Reveal.} Each route is densified to a point every {{grid.step_km|int}} km, with years interpolated linearly between dated waypoints; base entries are left as point clouds. A cell is revealed by a journey when its centre lies within a distance that depends on the mode and on whether the cell is land or sea: for a ship {{grid.radius.sea.sea|int}} km of open sea and {{grid.radius.sea.land|int}} km of land (a coast seen from the deck); {{grid.radius.land.land|int}} km either side of a land, river or sledge route; {{grid.radius.air.land|int}} km for a flight; {{grid.radius.base.land|int}} km around the points of a starting world. The cell's year for that journey is the year of the nearest qualifying route point. For each tradition, a cell's first year is the earliest over its journeys, and the journey responsible is recorded.
+
+\textbf{Pocket fill.} Routes leave gaps between them. Every {{grid.fill_step|int}} years, any connected pocket of unknown cells smaller than {{grid.fill_cells|int}} cells (about {{grid.fill_km2|int}} km\textsuperscript{2}) is necessarily enclosed by known cells and is counted as known from the year its last rim cell was lit. Fill accounts for {{filled_pct_of_known_europe|pc1}} of Europe's known area in 1960.
+
+\textbf{Loss.} A journey flagged as lost in year $L$ contributes the interval from its reveal year to $L$; a cell is known in year $t$ if $t$ lies in the union of the intervals of all journeys covering it. Cells covered only by lost journeys go dark again and light again if a later journey reaches them.
+
+\textbf{Sensitivity.} The model was rerun without the survey layer, with all distances halved and increased by half, with no fill and with fills of 25 and 400 cells, with confirmed entries only, and with no starting worlds.
+
+\section{Results}
+\subsection{Europe's recorded world}
+Figure~\ref{fig:maps} shows Europe's known world at eight dates and Figure~\ref{fig:curve} the share of land and surface over time. Europe starts from the Aegean ({{share.europe.-1400.land|pc1}} of the land in 1400 BC). Greek colonisation, Herodotus, Alexander and the Roman geographers raise it to {{share.europe.1.land|pc1}} by AD 1, and Ptolemy's \textit{Geography} to {{share.europe.150.land|pc1}}: as a single starting world it is the largest step in the series, {{fastest.land_gain|pc1}} of the land in the decade of the {{fastest.land_decade|raw}}s. The next millennium adds little; by 1400 the share is {{share.europe.1400.land|pc1}} and by 1492 {{share.europe.1492.land|pc1}} of the land and {{share.europe.1492.surface|pc1}} of the surface.
+
+The oceanic voyages then light the sea faster than the land. The surface share reaches {{share.europe.1600.surface|pc1}} by 1600 and passes half in {{milestones.surface.50|raw}}; the land share passes a quarter in {{milestones.land.25|raw}}, half in {{milestones.land.50|raw}} and three quarters in {{milestones.land.75|raw}}. Measured by century, the 1800s add the most land ({{century_gain.1800|pc1}}), followed by the 1900s ({{century_gain.1900|pc1}}) and the 1700s ({{century_gain.1700|pc1}}); the fastest decade after 1400 is the {{fastest.land_decade_after_1400|raw}}s ({{fastest.land_gain_after_1400|pc1}}), when the crossings of the African interior coincided with the surveys of India and the American West. In 1960 {{share.europe.1960.land|pc1}} of the land and {{share.europe.1960.surface|pc1}} of the surface are lit. From journeys alone the corresponding figures are {{journeys_only.share.1800.land|pc1}} in 1800, {{journeys_only.share.1900.land|pc1}} in 1900 and {{journeys_only.share.1960.land|pc1}} in 1960, with half of the land lit by {{journeys_only.milestones.land.50|raw}}; the survey and settlement layer adds {{survey_added_1960|pc1}} of the world's land by 1960. Figure~\ref{fig:when} maps the period in which each place was first lit.
+
+\begin{figure}[tbp]\centering\includegraphics[width=\textwidth]{f_maps.png}
+\caption{Europe's known world at eight dates: land known (cream), sea known (blue), not yet recorded for Europe (black). Titles give the share of the Earth's land and surface known.}\label{fig:maps}\end{figure}
+
+\begin{figure}[tbp]\centering\includegraphics[width=\textwidth]{f_curve.png}
+\caption{Share of the world's land known to each tradition, by year; for Polynesia, whose world was mostly ocean, the share of the whole surface. Dashed: Europe from journeys alone. The time axis is compressed before 1400.}\label{fig:curve}\end{figure}
+
+\begin{figure}[tbp]\centering\includegraphics[width=\textwidth]{f_when.png}
+\caption{When each place was first lit for Europe (land in strong colours, sea pale). Dark grey: land not lit by 1960.}\label{fig:when}\end{figure}
+
+\subsection{The biggest journeys}
+Table~\ref{tab:big} lists the journeys that first lit the largest areas for Europe, excluding starting worlds. The largest are ocean voyages, led by {{biggest.all.0.leader|raw}} ({{biggest.all.0.start|raw}}, {{biggest.all.0.new_km2|mkm}} million km\textsuperscript{2}) and {{biggest.all.1.leader|raw}} ({{biggest.all.1.start|raw}}, {{biggest.all.1.new_km2|mkm}} million km\textsuperscript{2}); the ten largest together account for {{biggest.top10_all_share|pc1}} of the area known in 1960. On land the largest are {{biggest.land.0.leader|raw}} ({{biggest.land.0.start|raw}}), {{biggest.land.1.leader|raw}} (around AD {{biggest.land.1.start|raw}}) and {{biggest.land.2.leader|raw}} ({{biggest.land.2.start|raw}}), each over a million km\textsuperscript{2}. Because the first journey to pass a place takes all the credit, these figures reward early and wide-ranging routes rather than the depth of an account.
+
+{{TABLE_BIG}}
+
+\begin{figure}[tbp]\centering\includegraphics[width=\textwidth]{f_journeys.png}
+\caption{The ten journeys that first lit the largest areas for Europe (sea and land), excluding starting worlds.}\label{fig:journeys}\end{figure}
+
+\subsection{Other points of view}
+Figure~\ref{fig:viewpoints} shows the four traditions in 1450. The Islamic world's written geography, starting from the Arabian, Syrian, Iraqi, Iranian and North African heartlands in the seventh and eighth centuries and extended by travellers and geographers to al-Andalus, the Volga, India, China and the Swahili coast, covers {{share.islamic.1400.land|pc1}} of the land in 1400. China's, from Zhang Qian's mission (138 BC) through Buddhist pilgrims to Zheng He's fleets, covers {{share.china.1492.land|pc1}} in 1492. Polynesian and Austronesian voyaging lights {{share.polynesia.1400.surface|pc1}} of the surface by 1400, almost all of it ocean ({{share.polynesia.1400.land|pc1}} of the land). In this gazetteer Europe leads China on land from {{overtake.china.land|yr}} and is never behind the Islamic world; but in the confirmed-only run, which drops Ptolemy's \textit{Geography} among others, the Islamic world leads until {{sensitivity.confirmed_only.overtake_islamic|raw}}. Which tradition ``knew more'' before 1500 therefore rests on how a classical compilation is counted.
+
+Table~\ref{tab:before} and Figure~\ref{fig:before} show the areas lit for another tradition before Europe. China recorded {{before_europe.china.km2|mkm}} million km\textsuperscript{2} before Europe, {{before_europe.china.pct_of_own|pc1}} of all it recorded, a median {{before_europe.china.median_lead_years|int}} years earlier; the Islamic world {{before_europe.islamic.km2|mkm}} million km\textsuperscript{2} (median lead {{before_europe.islamic.median_lead_years|int}} years); Polynesia {{before_europe.polynesia.km2|mkm}} million km\textsuperscript{2}, all of what it recorded, a median {{before_europe.polynesia.median_lead_years|int}} years earlier. Hawaii was settled around {{regions.hawaii.polynesia|raw}} and first seen by Europeans in {{regions.hawaii.europe_earliest|raw}}, Rapa Nui around {{regions.rapa_nui.polynesia|raw}} against {{regions.rapa_nui.europe|raw}}, Aotearoa New Zealand around {{regions.new_zealand.polynesia_earliest|raw}} against {{regions.new_zealand.europe_earliest|raw}}. Some Islamic-world leads are artefacts of the model: Piri Reis's world map of 1513, a starting-world entry compiled from European charts, lights the Brazilian coast with the {{grid.radius.base.land|int}} km base radius, more widely than the ship tracks that preceded it.
+
+{{TABLE_BEFORE}}
+
+\begin{figure}[tbp]\centering\includegraphics[width=\textwidth]{f_viewpoints.png}
+\caption{The four traditions in 1450 (the Polynesian panel is centred on the Pacific).}\label{fig:viewpoints}\end{figure}
+
+\begin{figure}[tbp]\centering\includegraphics[width=\textwidth]{f_before.png}
+\caption{Areas lit for another tradition before they were lit for Europe (or never lit for Europe by 1960). Land strong, sea pale.}\label{fig:before}\end{figure}
+
+\subsection{The last blanks}
+By the year in which half of a country's land was lit for Europe (countries over 150,000 km\textsuperscript{2}), the last are {{last_lit.by_half.0.country|raw}} ({{last_lit.by_half.0.y50|raw}}), {{last_lit.by_half.1.country|raw}} ({{last_lit.by_half.1.y50|raw}}, its north by aerial survey), {{last_lit.by_half.2.country|raw}} ({{last_lit.by_half.2.y50|raw}}) and {{last_lit.by_half.3.country|raw}} ({{last_lit.by_half.3.y50|raw}}). {{last_lit.after_1900_mkm2|f1}} million km\textsuperscript{2} of land was first lit after 1900, led by Canada, Antarctica, Brazil and the United States (Alaska). In 1960 {{last_lit.unknown_land_1960_mkm2|f1}} million km\textsuperscript{2} of land remains dark ({{journeys_only.unknown_land_1960_mkm2|f1}} million from journeys alone), {{last_lit.unknown_antarctica_mkm2|f1}} million of it in Antarctica. Much of the rest is a gap in the data rather than in knowledge: the least-lit countries in 1960 include {{last_lit.least_known_1960.0.country|raw}}, {{last_lit.least_known_1960.1.country|raw}}, {{last_lit.least_known_1960.4.country|raw}} and {{last_lit.least_known_1960.5.country|raw}}, which neither a journey in the gazetteer nor the coarse survey layer reaches.
+
+\subsection{Sensitivity}
+Table~\ref{tab:sens} and Figure~\ref{fig:sens} compare the variants. Distances matter most: halving them lowers Europe's 1960 land share to {{sensitivity.radius_half.land.1960|pc1}}, and increasing them by half raises it to {{sensitivity.radius_1p5.land.1960|pc1}}. The fill matters less ({{sensitivity.no_fill.land.1960|pc1}} without it, {{sensitivity.fill_400.land.1960|pc1}} with pockets up to 400 cells). Without the survey layer the 1960 figure is {{sensitivity.journeys_only.land.1960|pc1}}. Keeping only confirmed entries ({{sensitivity.confirmed_only.journeys|int}} journeys, which also drops the survey layer) gives {{sensitivity.confirmed_only.land.1960|pc1}} in 1960 and moves the half-land year from {{milestones.land.50|raw}} to {{sensitivity.confirmed_only.milestones.50|raw}}; dropping starting worlds lowers the ancient shares sharply (AD 150: {{sensitivity.no_base.land.150|pc1}} against {{sensitivity.main.land.150|pc1}}) and moves the fastest decade to the {{sensitivity.no_base.fastest_decade|raw}}s. In every variant the curve has the same shape: a slow millennium, a rise after 1492 led by the sea, and the largest land gains in the nineteenth century.
+
+{{TABLE_SENS}}
+
+\begin{figure}[tbp]\centering\includegraphics[width=\textwidth]{f_sensitivity.png}
+\caption{Europe's share of land known under each variant of the model.}\label{fig:sens}\end{figure}
+
+\begin{figure}[tbp]\centering\includegraphics[width=\textwidth]{f_status.png}
+\caption{All routes coloured by source status. Dots: starting-world entries.}\label{fig:status}\end{figure}
+
+\section{Limitations}
+The measure is the area near journeys in one gazetteer, not what any society knew. The gazetteer was compiled with AI assistance from mostly English-language sources, especially Wikipedia, which document European explorers far better than Arabic, Persian, Chinese or Pacific traditions; the other viewpoints are therefore thinner than they should be, and comparisons between traditions are indicative only. Journeys are dated by when they happened, not when their accounts were published or read, and the reach of an account (who read it, and whether it was believed) is not modelled. The survey and settlement layer is coarse, its dates unconfirmed, and it exists only for Europe; trade networks and missions are absent, so late shares remain lower bounds and comparisons with other traditions after 1700 favour Europe by construction. Routes are simplified and some are reconstructed. A fixed reveal distance treats a desert crossing, a forest river and a coast seen through fog alike. Starting worlds are coarse, and the base radius can light coasts more widely than the voyages that preceded them. Around {{data.status_pct.years_not_confirmed|pc}} of entries have unconfirmed years and {{data.status_pct.unsourced|pc1}} unconfirmed sources; they are flagged, and removing them does not change the conclusions.
+
+\section{Conclusion}
+Measured this way, Europe's recorded world grew in three phases: a classical expansion that ended with Ptolemy, about a millennium of near standstill, and five centuries of growth that lit the oceans first and the continental interiors last, fastest in the nineteenth century. The same method applied to other traditions shows how much of the ``unknown'' of the European map was recorded elsewhere first, from the Chinese interior to the Polynesian Pacific. The numbers depend on modelling choices and on the coverage of the gazetteer, both of which are published so that they can be challenged and improved.
+
+\section*{Data and code availability}
+The interactive version is at \url{{{meta.page}}}. Data and code are at \url{{{meta.repo}}} and archived with this paper at {{DOI_LINK}}. Derived data are released under CC BY 4.0 and code under the MIT licence; the journey gazetteer, which draws on Wikipedia, is released under CC BY-SA 4.0.
+
+\section*{AI statement}
+I wrote the text, with drafting and editing assistance from Claude (Anthropic), which also helped prepare the analysis code. I reviewed and checked all text and results.
+
+\begin{thebibliography}{9}
+\bibitem[Natural Earth(2026)]{naturalearth} Natural Earth (2026) Land, Antarctic ice shelves, Admin 0 countries and populated places, 1:50m and 1:10m. Public domain. \url{https://www.naturalearthdata.com/}
+\bibitem[Uber(2026)]{h3} Uber Technologies (2026) H3: a hexagonal hierarchical geospatial indexing system. Apache 2.0. \url{https://h3geo.org/}
+\bibitem[Wikipedia(2026)]{wiki} Wikipedia contributors (2026) Articles on individual journeys and travellers, as cited per journey in the gazetteer. CC BY-SA 4.0. \url{https://en.wikipedia.org/}
+\end{thebibliography}
+\end{document}

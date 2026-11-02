@@ -1,0 +1,674 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>The Known World</title>
+<meta name="description" content="A dark world that lights up as travellers wrote it down: how much of the Earth Europe, the Islamic world, China and Polynesia had recorded, from the Bronze Age to 1960, from {{data.journeys|int}} journeys.">
+<meta property="og:title" content="The Known World">
+<meta property="og:description" content="How much of the Earth each tradition had written about, from the Bronze Age to 1960. By 1492 Europe's recorded world covered {{share.europe.1492.land|pc}} of the land; by 1960, in this gazetteer, {{share.europe.1960.land|pc}}.">
+<meta property="og:image" content="https://maps.tristanhotham.com/known-world/header.png">
+<meta property="og:url" content="https://maps.tristanhotham.com/known-world/">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800;9..144,900&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<style>
+/* Paper and ink for the page; the map keeps the palette of the old exploration animations: cream land, blue sea, black unknown. */
+:root{
+  --bg:#F7F2E7; --panel:#EEE6D4; --fg:#22201C; --muted:#68625A; --rule:#E0D6C1; --card:#FFFCF4; --border:#CEC2A8;
+  --red:#B23A2A; --eu:#B23A2A; --is:#2E8A6E; --ch:#B07A12; --po:#2F5FA7;
+  --mland:#ece4d4; --msea:#4f7fae; --mdark:#1b1b1b;
+  --display:"Fraunces",Georgia,"Times New Roman",serif;
+  --body:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#15130F; --panel:#1F1C17; --fg:#EEE8DC; --muted:#AAA294; --rule:#332F27; --card:#1A1813; --border:#4A443A;
+  --red:#F07B66; --eu:#F07B66; --is:#5CC49F; --ch:#E8B54F; --po:#7EA7E8; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#15130F; --panel:#1F1C17; --fg:#EEE8DC; --muted:#AAA294; --rule:#332F27; --card:#1A1813; --border:#4A443A;
+  --red:#F07B66; --eu:#F07B66; --is:#5CC49F; --ch:#E8B54F; --po:#7EA7E8; color-scheme:dark}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--fg);font:400 18px/1.62 var(--body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));overflow-x:hidden}
+.wrap{max-width:700px;margin:0 auto;padding-block:28px 64px}
+.wrap .bleed{width:min(1240px,calc(100vw - 32px));margin-left:calc((100% - min(1240px,100vw - 32px))/2);margin-right:0}
+a{color:inherit;text-decoration-color:var(--red);text-underline-offset:3px}
+.kicker{font:500 12px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.kicker b{background:var(--red);color:#fff;padding:5px 8px;font-weight:500}
+header.hero{border-bottom:6px double var(--fg);padding-bottom:22px;margin-top:18px}
+h1{font:900 clamp(46px,11.5vw,88px)/.9 var(--display);letter-spacing:-.02em;margin:0;text-wrap:balance}
+h1 span{color:var(--red)}
+.dek{font-size:21px;line-height:1.42;margin:14px 0 0;max-width:60ch}
+.byline{font:400 13px/1.4 var(--mono);color:var(--muted);margin-top:14px}
+h2{font:800 34px/1.04 var(--display);letter-spacing:-.01em;margin:54px 0 10px;text-wrap:balance}
+h2 .n{font:500 13px/1 var(--mono);color:var(--red);display:block;letter-spacing:.1em;margin-bottom:10px}
+p{margin:0 0 16px}
+.lede::first-letter{font:900 72px/.8 var(--display);float:left;margin:6px 10px 0 0;color:var(--red)}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule);margin:26px 0 8px}
+.stats div{background:var(--card);padding:14px 12px}
+.stats b{display:block;font:900 clamp(22px,4.4vw,32px)/1 var(--display);letter-spacing:-.01em}
+.stats b.a{color:var(--red)} .stats b.b{color:var(--po)} .stats b.c{color:var(--is)} .stats b.d{color:var(--ch)}
+.stats span{font:400 12px/1.35 var(--mono);color:var(--muted);display:block;margin-top:6px}
+@media (max-width:600px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.figure{margin:26px 0 30px}
+.fig-h{font:600 19px/1.25 var(--display);margin:0 0 4px}
+.fig-sub{font:400 13px/1.45 var(--mono);color:var(--muted);margin:0 0 12px}
+.src{font:400 12px/1.45 var(--mono);color:var(--muted);margin-top:10px}
+.chart{width:100%;position:relative}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+svg text{font-family:var(--mono);fill:var(--fg)}
+.tip{position:absolute;pointer-events:none;background:var(--fg);color:var(--bg);font:400 12px/1.45 var(--mono);padding:8px 10px;border-radius:3px;max-width:300px;z-index:1000;transform:translate(-50%,calc(-100% - 12px));display:none}
+.btn{font:500 12px/1 var(--mono);background:var(--card);color:var(--fg);border:1px solid var(--border);border-radius:3px;padding:8px 10px;cursor:pointer;min-height:36px}
+.btn[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.btn:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+.pull{font:600 26px/1.25 var(--display);border-left:6px solid var(--red);padding:4px 0 4px 18px;margin:30px 0}
+.note{background:var(--panel);border:1px solid var(--rule);padding:14px 16px;font-size:16px;margin:22px 0}
+table.tbl{width:100%;border-collapse:collapse;font:400 13px/1.4 var(--mono)}
+table.tbl th{font:500 11px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);text-align:left;padding:6px 6px 6px 0;border-bottom:2px solid var(--fg);white-space:nowrap;background:var(--card)}
+table.tbl td{padding:6px 6px 6px 0;border-bottom:1px solid var(--rule);vertical-align:top}
+table.tbl td.r,table.tbl th.r{text-align:right;white-space:nowrap}
+table.tbl tr[data-j]{cursor:pointer}
+table.tbl tr[data-j]:hover td{background:var(--panel)}
+.tablebox{max-height:520px;overflow:auto;border:1px solid var(--border);background:var(--card);padding:0 10px}
+details{margin:14px 0}
+summary{font:500 13px/1.4 var(--mono);cursor:pointer;color:var(--fg);padding:8px 0}
+.cta{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0}
+.cta a{font:500 13px/1 var(--mono);text-decoration:none;border:1px solid var(--fg);padding:11px 14px;border-radius:3px}
+.cta a.p{background:var(--red);border-color:var(--red);color:#fff}
+footer{border-top:6px double var(--fg);margin-top:56px;padding-top:16px;font:400 13px/1.55 var(--mono);color:var(--muted)}
+footer p{margin:0 0 10px}
+.theme{position:fixed;right:12px;bottom:12px;z-index:1002}
+[hidden]{display:none!important}
+.legend{display:flex;gap:6px 14px;flex-wrap:wrap;font:400 12px/1.3 var(--mono);color:var(--muted);margin-top:8px;align-items:center}
+.legend span{display:inline-flex;align-items:center}
+.legend i{display:inline-block;width:12px;height:12px;margin-right:6px;border-radius:2px;border:1px solid rgba(0,0,0,.15)}
+.legend i.ln{height:0;border:0;border-top:3px solid;width:18px;border-radius:0}
+
+/* ---------- the stage: header bars, map, controls ---------- */
+#stage{background:#111;color:#f3eee4;border-radius:3px;overflow:hidden;position:relative;display:flex;flex-direction:column;margin-top:14px}
+.bar{background:#c0392b;background:linear-gradient(#c8402f,#a8301f);color:#fff;font:800 clamp(15px,2.4vw,22px)/1.15 var(--display);padding:9px 14px;display:flex;justify-content:space-between;gap:10px;align-items:center}
+.bar .t{min-width:0}
+.bar .t small{display:block;font:400 11px/1.2 var(--mono);opacity:.85;letter-spacing:.04em;margin-top:2px}
+.hud{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 16px;align-items:center;padding:10px 14px 10px;background:#141414;border-bottom:1px solid #2a2a2a}
+.year{font:900 clamp(34px,6.6vw,58px)/1 var(--display);letter-spacing:-.02em;grid-row:1/3;min-width:4.2ch;font-variant-numeric:tabular-nums;color:#fff}
+.year small{font:500 .38em/1 var(--mono);letter-spacing:.06em;margin-left:4px;color:#d8cfbf}
+.meter{display:grid;grid-template-columns:clamp(96px,22vw,170px) minmax(0,1fr) 56px;gap:8px;align-items:center;font:500 12px/1.1 var(--mono);color:#e7e0d2}
+.meter .track{height:12px;background:#2c2c2c;border-radius:2px;overflow:hidden;position:relative}
+.meter .fill{position:absolute;inset:0 auto 0 0;width:0;background:#ece4d4;transition:width .12s linear}
+.meter.s .fill{background:#4f7fae}
+.meter b{font-weight:500;text-align:right;font-variant-numeric:tabular-nums}
+#map{height:min(66vh,620px);min-height:340px;background:#1b1b1b;flex:1 1 auto}
+@media (max-width:700px){#map{height:min(58vh,480px)}}
+.ctl{background:#141414;padding:10px 12px 12px;border-top:1px solid #2a2a2a;display:flex;flex-direction:column;gap:9px}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.row.sl{flex-wrap:nowrap}
+.cbtn{font:500 12px/1 var(--mono);background:#232323;color:#f3eee4;border:1px solid #3a3a3a;border-radius:3px;padding:8px 10px;cursor:pointer;min-height:36px;white-space:nowrap}
+.cbtn[aria-pressed="true"]{background:#f3eee4;color:#111;border-color:#f3eee4}
+.cbtn.play{min-width:44px;font-size:15px}
+.cbtn:focus-visible{outline:2px solid #ff8a73;outline-offset:2px}
+input[type=range].time{flex:1;min-width:0;accent-color:#c8402f;height:30px}
+.lab{font:500 10.5px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:#a49c8e;flex:0 0 auto}
+.scrollrow{display:flex;gap:6px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:thin;padding-bottom:2px;max-width:100%}
+.scrollrow .cbtn{flex:0 0 auto}
+.vpdot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;vertical-align:0}
+.searchbox{position:relative;flex:1 1 220px;min-width:0}
+.searchbox input{font:400 14px/1 var(--mono);background:#232323;color:#f3eee4;border:1px solid #3a3a3a;border-radius:3px;padding:9px 10px;min-height:38px;width:100%}
+.suggest{position:absolute;left:0;right:0;bottom:100%;margin:0 0 2px;padding:0;list-style:none;background:#232323;border:1px solid #3a3a3a;z-index:1003;font:400 13px/1.3 var(--mono);display:none;max-height:300px;overflow:auto;color:#f3eee4}
+.suggest li{padding:8px 10px;cursor:pointer;border-bottom:1px solid #333}
+.suggest li span{color:#a49c8e}
+.suggest li[aria-selected="true"],.suggest li:hover{background:#333}
+.moment{font:400 13px/1.45 var(--mono);color:#e7e0d2;min-height:2.9em}
+.moment b{color:#fff;font-weight:500}
+#stage.mfs-fake,#stage:fullscreen{display:flex;flex-direction:column}
+#stage.mfs-fake #map,#stage:fullscreen #map{height:auto;flex:1 1 auto;min-height:0}
+#stage.mfs-fake .moment,#stage:fullscreen .moment{display:none}
+#stage .mfs-btn{top:auto;bottom:auto}
+.side{background:var(--card);border:1px solid var(--border);padding:12px 14px 10px;font:400 13px/1.5 var(--mono);margin-top:12px;min-height:90px}
+.side .big{font:800 22px/1.15 var(--display);margin:2px 0 6px}
+.side .sub{color:var(--muted);font-size:12px;margin:0 0 6px}
+.side table{border-collapse:collapse;margin:6px 0}
+.side td{padding:3px 12px 3px 0;vertical-align:top}
+.side td:first-child{white-space:nowrap}
+.flag{display:inline-block;font:500 10.5px/1 var(--mono);padding:3px 6px;border-radius:2px;border:1px solid currentColor;margin-left:4px;vertical-align:1px;white-space:nowrap}
+.flag.ok{color:#2E8A6E}.flag.rd{color:#68625A}.flag.nc{color:#B07A12}.flag.us{color:#B23A2A}
+/* leaflet */
+.leaflet-container{font:400 12px/1.4 var(--mono);background:#1b1b1b}
+.leaflet-control-attribution{background:rgba(20,20,20,.75)!important;color:#bbb}
+.leaflet-control-attribution a{color:#eee}
+.leaflet-bar a{background:#232323;color:#f3eee4;border-bottom-color:#3a3a3a}
+.leaflet-bar a:hover{background:#333;color:#fff}
+.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:#FFFCF4;color:#22201C}
+.leaflet-popup-content{font:400 12.5px/1.45 var(--mono);margin:12px 14px;max-width:290px}
+.leaflet-popup-content .pt{font:800 17px/1.15 var(--display);margin:0 0 4px}
+.leaflet-popup-content .ps{color:#68625A;margin:0 0 6px}
+.leaflet-popup-content p{margin:0 0 6px}
+.lyrWrap{position:absolute;top:10px;left:54px;z-index:1000}
+.lyrBtn{background:#232323;color:#f3eee4;border:1px solid #3a3a3a;border-radius:3px;font:600 12px/1 var(--mono);padding:9px 10px;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.4)}
+.lyrBtn[aria-expanded="true"]{background:#f3eee4;color:#111}
+.lyrPanel{background:#1e1e1e;color:#f3eee4;border:1px solid #3a3a3a;border-radius:3px;padding:10px 12px 8px;margin-top:6px;width:240px;box-shadow:0 2px 10px rgba(0,0,0,.5);font:400 12px/1.3 var(--mono);max-height:min(56vh,440px);overflow:auto}
+.lyrPanel .r{margin:0 0 9px}
+.lyrPanel label{display:flex;gap:6px;align-items:center;cursor:pointer;font-weight:600}
+.lyrPanel input[type=range]{width:100%;accent-color:#c8402f}
+.lyrPanel .sub{color:#a49c8e;font-size:11px;margin-top:3px}
+.lyrPanel .hd{font:500 10.5px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:#a49c8e;margin:10px 0 7px;border-top:1px solid #333;padding-top:9px}
+.lyrPanel .hd:first-child{border-top:0;padding-top:0;margin-top:0}
+.plabel{background:none;border:0;box-shadow:none;color:#fff;font:500 11px/1 var(--mono);text-shadow:0 0 3px #000,0 0 3px #000;padding:0;white-space:nowrap}
+.plabel::before{display:none}
+.loading{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font:400 13px var(--mono);color:#bbb;z-index:500;pointer-events:none}
+.legend.dark{color:#cfc6b6;margin:0}
+.legend.dark i{border-color:rgba(255,255,255,.25)}
+.dl{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0 0;font:400 12px/1.4 var(--mono)}
+@media print{.theme,.ctl{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="kicker"><b>Data study</b><span>History</span><span>{{data.journeys|int}} journeys, 2200 BC to 1960</span></div>
+<header class="hero">
+  <h1>The <span>Known</span> World</h1>
+  <p class="dek">A dark world that lights up as travellers wrote it down. How much of the Earth each tradition had recorded, from the Bronze Age to 1960, and how that depended on who was doing the looking.</p>
+</header>
+<div class="byline">Dr Tristan Hotham · Independent researcher · 2026 · Sources: a gazetteer of {{data.journeys|int}} journeys compiled for this study from Wikipedia and other published accounts; Natural Earth</div>
+
+<div class="stats">
+  <div><b class="a">{{share.europe.1492.land|pc}}</b><span>of the world's land within reach of Europe's written accounts in 1492</span></div>
+  <div><b class="b">{{milestones.land.50|raw}}</b><span>the year half the world's land was recorded for Europe, by journeys, surveys and settlement</span></div>
+  <div><b class="c">{{share.europe.1960.land|pc}}</b><span>of the land recorded by 1960; from journeys alone, {{journeys_only.share.1960.land|pc}}</span></div>
+  <div><b class="d">{{regions.new_zealand.polynesia_earliest|raw}}</b><span>Polynesians reach Aotearoa, New Zealand; Europe's first sight was {{regions.new_zealand.europe_earliest|raw}}</span></div>
+</div>
+
+<p class="lede">There is a famous animation of world exploration from Europe's point of view. The world starts black, and as each ship and caravan sets out, the places it reached turn from dark to light. It is mesmerising, and it has two problems. It leaves Europe's own neighbours dark for centuries after Greek and Roman writers had described them, and it presents one tradition's point of view as if it were the only one.</p>
+<p>This is my attempt at an honest version. I compiled {{data.journeys|int}} journeys, from Austronesian voyages out of Taiwan around 2200 BC to the last Antarctic and Arabian crossings of the 1950s, each with a dated route. A place lights up when a journey whose account reached its readers passed close enough to describe it. Europe's world starts from the Bronze Age Aegean, not from nothing. Because much of the world was mapped not by expeditions but by surveyors and settlers, Europe's map also has a second layer: {{data.surveys|int}} regions lit from the year their systematic survey was published or settlement became general, from the Mitchell map of the American colonies to the aerial survey of northern Canada. You can switch that layer off, and you can switch the point of view to the Islamic world, China or Polynesia and watch a different world light up.</p>
+<div class="note"><b>Every place on this map was known to the people who lived there.</b> Dark here means only that no account in my gazetteer had yet carried it into the written record of the chosen tradition. Nearly every traveller relied on local guides, pilots and interpreters, and I name some below.</div>
+
+<h2><span class="n">01 · The map</span>Watch the world light up</h2>
+<p>Press play, drag the slider or jump to a moment. The time scale is uneven: the ancient centuries pass quickly and the years after 1400 slowly. Click a route for its story, or anywhere on the map to see who first recorded it and when.</p>
+<div class="bleed">
+<div id="stage" data-fullscreen-map>
+  <div class="bar"><div class="t" id="title">The world as recorded for Europe<small id="subtitle">Land and sea within reach of written accounts that reached European readers</small></div></div>
+  <div class="hud">
+    <div class="year" id="year">1400</div>
+    <div class="meter"><span>Land known</span><div class="track"><div class="fill" id="fl"></div></div><b id="pl">0%</b></div>
+    <div class="meter s"><span>Earth's surface known</span><div class="track"><div class="fill" id="fs"></div></div><b id="ps">0%</b></div>
+  </div>
+  <div id="map" role="application" aria-label="World map lit by recorded journeys up to the chosen year"><div class="loading" id="loading">Loading the world...</div></div>
+  <div class="ctl">
+    <div class="row sl"><button class="cbtn play" id="play" aria-label="Play">&#9654;</button><input type="range" class="time" id="slider" min="0" max="1000" step="1" value="0" aria-label="Year"><button class="cbtn" id="speed" aria-label="Playback speed">1×</button></div>
+    <div class="row"><span class="lab">Point of view</span><div class="scrollrow" id="vpRow"></div></div>
+    <div class="row" id="layerRow"><span class="lab">Europe counts</span><div class="scrollrow"><button class="cbtn" data-s="1" aria-pressed="true">Journeys plus surveys and settlement</button><button class="cbtn" data-s="0" aria-pressed="false">Journeys only</button></div></div>
+    <div class="row"><span class="lab">Jump to</span><div class="scrollrow" id="momRow"></div></div>
+    <div class="moment" id="moment" aria-live="polite"></div>
+    <div class="row"><div class="searchbox"><input type="search" id="q" placeholder="Search a place (Timbuktu, Hawaii, Lhasa...)" aria-label="Search a place" autocomplete="off"><ul class="suggest" id="sug" role="listbox"></ul></div></div>
+    <div class="legend dark" id="legend"></div>
+  </div>
+</div>
+<div class="side" id="side" aria-live="polite"><div class="sub">Click the map or search for a place to see when it was first recorded from each point of view.</div></div>
+<div class="dl">Video: <a href="release/video/known-world_1920x1080.mp4">landscape (1920 x 1080)</a><a href="release/video/known-world_1080x1920.mp4">vertical (1080 x 1920)</a></div>
+<p class="src">Each grid cell (an equal-area hexagon of about {{grid.mean_km2|int}} km²) lights up in the year the nearest point of a route passed within reach: {{grid.radius.sea.sea|int}} km of open sea and {{grid.radius.sea.land|int}} km of coast for a ship, {{grid.radius.land.land|int}} km either side of a land, river or sledge route, {{grid.radius.air.land|int}} km for a flight, {{grid.radius.base.land|int}} km around the points of a starting world. Small enclosed pockets fill in. For Europe, a survey and settlement layer lights whole regions from the year they were systematically mapped or settled (switch it off for journeys alone). Knowledge flagged as lost (Vinland, Norse Greenland, the Phoenician voyage round Africa) goes dark again unless another journey covers it. Routes drawn as they happen, coloured by century. Base map, borders and names: Natural Earth; optional relief tiles © Esri.</p>
+</div>
+
+<h2><span class="n">02 · The curve</span>A slow start and a long nineteenth century</h2>
+<p>For Europe, the first big step is Ptolemy. His Geography, written around AD 150, sums up what the Roman world knew, from Ireland to the edge of China, and on its own lifts Europe's recorded world from {{share.europe.1.land|pc}} to {{share.europe.150.land|pc}} of the land. Then, for more than a thousand years, very little: by 1400 the figure is {{share.europe.1400.land|pc}}. In 1492 it is {{share.europe.1492.land|pc}} of the land and {{share.europe.1492.surface|pc}} of the Earth's surface.</p>
+<p>The ocean voyages change the sea first. Europe's known share of the Earth's surface passes half in {{milestones.surface.50|raw}}; the land takes until {{milestones.land.50|raw}}, and three quarters of it until {{milestones.land.75|raw}}. The nineteenth century adds the most, {{century_gain.1800|pc1}} of the world's land, as the crossings of Africa, Australia and Central Asia coincided with the surveys of India, the American West and the prairies; the fastest single decade after 1400 is the {{fastest.land_decade_after_1400|raw}}s ({{fastest.land_gain_after_1400|pc1}}). From journeys alone the curve is lower and flatter at the end: half the land by {{journeys_only.milestones.land.50|raw}} and {{journeys_only.share.1960.land|pc}} in 1960, against {{share.europe.1960.land|pc}} with surveys and settlement.</p>
+<div class="figure"><p class="fig-h">Share of the world known, by point of view</p><p class="fig-sub">Share of the world's land known to each tradition by year; for Polynesia, whose world was mostly ocean, the share of the Earth's whole surface. The dashed red line is Europe from journeys alone. The time axis is uneven, like the slider. Hover the chart.</p><div class="chart" id="curve"></div><div class="legend" id="curveLegend"></div></div>
+<div class="pull">In 1492 Europe's recorded world covered {{share.europe.1492.land|pc}} of the land. By 1800, {{share.europe.1800.land|pc}}; by 1900, {{share.europe.1900.land|pc}}.</div>
+
+<h2><span class="n">03 · Who was looking</span>Four worlds, not one</h2>
+<p>Switch the point of view and the map changes. The Islamic world's written geography, from the Arab conquests through al-Masudi, al-Biruni, al-Idrisi and Ibn Battuta, covers {{share.islamic.1400.land|pc}} of the land by 1400, from al-Andalus to China and down the African coast to Sofala. China's, from Zhang Qian's mission to the west in 138 BC to Zheng He's fleets, reaches {{share.china.1492.land|pc}} by 1492. Polynesian and wider Austronesian voyaging, dated here by archaeology rather than writing, lit far more ocean than land: {{share.polynesia.1400.surface|pc1}} of the Earth's surface by 1400, but only {{share.polynesia.1400.land|pc1}} of its land.</p>
+<p>In this gazetteer Europe, starting from the Aegean and with the Greek and Roman geographers behind it, leads on land from {{overtake.china.land|yr}} onwards and is never behind the Islamic world. That lead is partly a matter of definition: Ptolemy's Geography is counted as one starting world for Europe, and in the confirmed-only check below, where entries whose dates could not be confirmed are dropped, the Islamic world leads until {{sensitivity.confirmed_only.overtake_islamic|raw}}.</p>
+<p>Much was known elsewhere first. Of the area China's travellers recorded, {{before_europe.china.pct_of_own|pc}} was lit for China before it was for Europe, a median {{before_europe.china.median_lead_years|int}} years earlier, mostly within China itself, Mongolia and Russia. Polynesians settled Hawaii around {{regions.hawaii.polynesia|raw}} and Cook arrived in {{regions.hawaii.europe_earliest|raw}}; Rapa Nui around {{regions.rapa_nui.polynesia|raw}}, and Europe's first sight was {{regions.rapa_nui.europe|raw}}; Aotearoa around {{regions.new_zealand.polynesia_earliest|raw}}, against Tasman in {{regions.new_zealand.europe_earliest|raw}}. Chinese records describe Japan from the third century, Europe's from {{regions.japan.europe_earliest|raw}}.</p>
+<div class="figure"><p class="fig-h">Known to another tradition before Europe</p><p class="fig-sub">Area lit for each point of view before it was lit for Europe (or never lit for Europe), million km².</p><div class="chart" id="beforeChart"></div></div>
+
+<h2><span class="n">04 · Big journeys</span>The voyages that lit the most</h2>
+<p>Measured by the new area each journey was the first to light for Europe, the biggest are ocean voyages: the second leg of Cook's second voyage, {{biggest.all.0.start|raw}} to {{biggest.all.0.end|raw}}, round the high southern latitudes, lit {{biggest.all.0.new_km2|mkm}} million km²; Magellan's crossing of the Pacific {{biggest.all.1.new_km2|mkm}} million. On land, where a route lights a strip about 240 km wide, the biggest are long journeys across unrecorded country: {{biggest.land.0.leader|raw}} in {{biggest.land.0.start|raw}}, {{biggest.land.1.leader|raw}} around AD {{biggest.land.1.start|raw}}, and {{biggest.land.2.leader|raw}} across Siberia in {{biggest.land.2.start|raw}}.</p>
+<div class="figure"><p class="fig-h">The journeys that lit the most for Europe</p><p class="fig-sub">New area first lit by each journey (sea and land, and land only), excluding starting worlds. Click a row to see it on the map.</p><div class="tablebox"><table class="tbl" id="bigTable"></table></div></div>
+
+<h2><span class="n">05 · The last blanks</span>Where the map stayed dark</h2>
+<p>By the halfway measure, the last large countries to be recorded for Europe are {{last_lit.by_half.0.country|raw}} (half its land lit by {{last_lit.by_half.0.y50|raw}}), {{last_lit.by_half.1.country|raw}} ({{last_lit.by_half.1.y50|raw}}, its north mapped from the air) and {{last_lit.by_half.2.country|raw}} ({{last_lit.by_half.2.y50|raw}}). After 1900, {{last_lit.after_1900_mkm2|f1}} million km² of land was still being lit for the first time, most of it in northern Canada, Antarctica, the Brazilian interior and Alaska.</p>
+<p>The map never goes fully light, and that needs saying plainly. In 1960 {{last_lit.unknown_land_1960_mkm2|f1}} million km² of land is still dark, {{last_lit.unknown_antarctica_mkm2|f1}} million of it in Antarctica. Much of the rest is not land nobody had described but land that neither a journey in my gazetteer nor my deliberately coarse survey layer reaches: parts of the Sahara and the Sahel, Cameroon and the Central African Republic, the outer islands of Indonesia, the Amazon, northern Siberia and the Greenland ice. Read the late years as a lower bound.</p>
+
+<h2><span class="n">06 · The guides</span>Nobody travelled alone</h2>
+<p>{{data.with_guides|int}} of the journeys name a local guide, pilot or interpreter in their notes, and many more relied on one unnamed. A few: the Gedrosian pilot Hydraces, who guided Nearchus's fleet along the coast of Pakistan; the Indian sailor who showed Eudoxus the monsoon route; Ma Huan, Zheng He's Muslim interpreter; the Gujarati pilot who took da Gama from Malindi to Calicut; Malintzin, Cortes's interpreter; Enrique, the Malay interpreter of Magellan's fleet; Tupaia, the Tahitian navigator who sailed with Cook and drew him a chart of the islands; Matonabbee, who led Hearne to the Arctic coast; Sacagawea and the Shoshone guide Old Toby with Lewis and Clark; Kadu, the Marshallese navigator on the Rurik; Sidi Mubarak Bombay, caravan leader to Burton, Speke and Stanley; Kehu in New Zealand; and the Bedouin Salih bin Kalut, who took Bertram Thomas across the Empty Quarter.</p>
+
+<h2><span class="n">07 · How I did this</span>Methods and caveats</h2>
+<p><b>The gazetteer.</b> I compiled {{data.journeys|int}} journeys in eight regional files: Greek and Phoenician, Roman and medieval, the Atlantic and Indian Ocean, the Americas, the African interior, overland Asia, the Pacific and the poles, and the other points of view. {{data.europe_n|int}} are Europe's, {{data.by_viewpoint.islamic|int}} the Islamic world's, {{data.by_viewpoint.china|int}} China's and {{data.by_viewpoint.polynesia|int}} Polynesian or Austronesian. Each has a leader, sponsor, years, mode (sea, land, river, sledge, air, or a starting world), a dated route of {{data.waypoints|int}} waypoints in all, a one-line summary, sources and notes. Routes follow coasts and named stops; {{data.low_conf|int}} are marked low confidence because the route is reconstructed or disputed. Duplicates across files were merged ({{data.merged_duplicates|int}}) or renamed ({{data.renamed|int}}). Polynesian dates are settlement dates from archaeology and radiocarbon, not written accounts.</p>
+<p><b>Sources checked.</b> Every journey carries a source status, shown in its popup. {{data.status_pct.years_confirmed|pc}} have their start and end years confirmed in the text of the cited Wikipedia article by an automatic check; {{data.status_pct.read_by_compiler|pc}} were taken by the compiler from the pages they cite; {{data.status_pct.years_not_confirmed|pc}} cite an article that does not contain one or both years, or have dates partly from general knowledge; and {{data.status_pct.unsourced|pc1}} cite a page that could not be read or found. I ran every result again with only the first two groups ({{data.confirmed_n|int}} journeys) as a check.</p>
+<p><b>The model.</b> The Earth is divided into {{grid.cells|int}} equal-area H3 hexagons. Routes are cut into points every {{grid.step_km|int}} km with years interpolated between dated waypoints, and a cell is lit by a journey when its centre is within reach of a point (distances above), in the year of the nearest point. A cell's first year is the earliest over all journeys of a point of view. An unknown pocket of fewer than {{grid.fill_cells|int}} cells (about {{grid.fill_km2|int}} km², roughly the size of the United Kingdom) wholly ringed by known cells counts as known from the year its rim was complete: this fills {{filled_pct_of_known_europe|pc1}} of Europe's known area. A cell is land if its centre is on Natural Earth land, including Antarctic ice shelves.</p>
+<p><b>Surveys and settlement.</b> Journeys cannot capture the township surveys of the United States and the Canadian prairies, the trigonometrical survey of India, the Russian land survey or the settlement of the Pampas and of south-eastern Australia. For Europe only, I added {{data.surveys|int}} regions, defined by modern first-level divisions or countries and sometimes clipped to their settled part, each lit in one year between {{data.survey_first|raw}} and {{data.survey_last|raw}}: when its systematic survey was published in Europe or settlement became general. They add {{survey_added_1960|pc1}} of the world's land by 1960. Their dates are mine, from general knowledge of the history of cartography, and are marked as not confirmed; they are coarse by design, and the page and data give every result with and without them.</p>
+<p><b>Sensitivity.</b> The radii, the fill and the survey layer are choices, so I varied them. Without the survey layer Europe's 1960 land share is {{sensitivity.journeys_only.land.1960|pc}}. Halving every radius brings it to {{sensitivity.radius_half.land.1960|pc}}; increasing them by half raises it to {{sensitivity.radius_1p5.land.1960|pc}}; no fill gives {{sensitivity.no_fill.land.1960|pc}} and a fill of up to 400 cells {{sensitivity.fill_400.land.1960|pc}}. Keeping only entries with confirmed or compiler-read sources, which also drops the survey layer, gives {{sensitivity.confirmed_only.land.1960|pc}} and moves the year half the land was lit from {{milestones.land.50|raw}} to {{sensitivity.confirmed_only.milestones.50|raw}}. The shape of the curve, the slow millennium, the jump after 1492, the nineteenth-century surge, survives every variant; the exact percentages do not, so read them as indications.</p>
+<div class="figure"><p class="fig-h">Sensitivity of the main results</p><p class="fig-sub">Europe's share of the land lit, by year, and the year a quarter and half of the land was lit, under each variant.</p><div class="tablebox"><table class="tbl" id="sensTable"></table></div></div>
+<p><b>What this is not.</b> It is not a measure of what any society knew. It measures how much of the Earth lies close to the journeys in one gazetteer, plus a coarse survey layer for Europe, compiled by me with AI assistance from mostly English-language sources, which know Europe's explorers far better than Arabic, Persian, Chinese or Polynesian traditions; the other points of view are therefore thinner than they should be. Trade, missions and much colonial mapping are missing, and the other traditions have no survey layer. Dates are the years a journey took place, not the years its account was published. Routes are approximations, and a fixed reveal distance treats a desert crossing and a forest river alike.</p>
+<details><summary>Sources and licences</summary>
+<ul>
+<li>The journeys: compiled for this study from English Wikipedia articles (CC BY-SA 4.0) and other published accounts cited per journey; the gazetteer (data/expeditions.json) is released under CC BY-SA 4.0 to respect Wikipedia's licence.</li>
+<li>Natural Earth land, Antarctic ice shelves, countries and populated places (public domain).</li>
+<li>H3 hexagonal grid (Uber, Apache 2.0). Leaflet (BSD-2). Optional relief tiles © Esri.</li>
+<li>Inspired by the animation "World exploration from Europe's point of view", widely shared on Reddit.</li>
+</ul></details>
+
+<div class="cta"><a class="p" href="https://doi.org/10.5281/zenodo.23897793">Read the paper</a><a href="https://github.com/Tristan-Hotham/known-world">Data and code</a><a href="https://blog.tristanhotham.com/2026/10/31/known-world/">Blog post</a></div>
+
+<footer>
+<p>Dr Tristan Hotham, Independent researcher. ORCID <a href="https://orcid.org/0000-0003-4931-9349">0000-0003-4931-9349</a>.</p>
+<p>Cite as: Hotham, T. (2026) The Known World: how much of the Earth each tradition had written about, from the Bronze Age to 1960. Zenodo. <a href="https://doi.org/10.5281/zenodo.23897793">https://doi.org/10.5281/zenodo.23897793</a></p>
+<p>Licence: code MIT; text, figures and derived data CC BY 4.0; the journey gazetteer CC BY-SA 4.0. Natural Earth public domain.</p>
+<p>I wrote the text, with drafting and editing assistance from Claude (Anthropic), which also helped prepare the analysis code. I reviewed and checked all text and results.</p>
+</footer>
+</div>
+<div class="tip" id="tip"></div>
+<button class="btn theme" id="theme" aria-label="Toggle dark mode">◐</button>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+const R = /*RESULTS*/;
+const VPS = ["europe", "islamic", "china", "polynesia"];
+const VPN = {europe: "Europe", islamic: "the Islamic world", china: "China", polynesia: "Polynesia", all: "all four"};
+const VPS_ = {europe: "Europe", islamic: "Islamic world", china: "China", polynesia: "Polynesia", all: "All compared"};
+const VPC = {europe: "#E0533F", islamic: "#3FB58A", china: "#E3A72F", polynesia: "#5C8FE0"};
+const STATUS = {years_confirmed: ["ok", "dates checked"], read_by_compiler: ["rd", "from cited source"], years_not_confirmed: ["nc", "dates not confirmed"], unsourced: ["us", "source not confirmed"]};
+const CENT = ["#ff6a52", "#ffb347", "#ffe066", "#8be08b", "#5ed0ff", "#b59bff", "#ff8fd1"];
+const NEVERV = 65535, OFF = 2500, RS = 2048, MERC = 85.0511287798;
+let SITE = null, Jn = [], cur = {vp: "europe", year: -1400, pos: 0, surv: true}, playing = false, speed = 1, lastT = 0;
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? "" : s).replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+const yr = y => { y = Math.round(y); return y < 0 ? (-y) + " BC" : y < 1000 ? "AD " + Math.max(1, y) : String(y); };
+const yrBig = y => { y = Math.round(y); return y < 0 ? `${-y}<small>BC</small>` : y < 1000 ? `${Math.max(1, y)}<small>AD</small>` : String(y); };
+const fmt = n => Math.round(n).toLocaleString("en-GB");
+const mkm = km2 => (km2 / 1e6).toFixed(1);
+const K = v => (v === "europe" && !cur.surv) ? "europe_j" : v;     // raster and series key: Europe with or without the survey layer
+
+// ---------- time scale ----------
+let KN = [[-2200, 0], [-500, .12], [1400, .36], [1960, 1]];
+function interp(x, xs, ys) { if (x <= xs[0]) return ys[0]; for (let i = 1; i < xs.length; i++) if (x <= xs[i]) return ys[i - 1] + (x - xs[i - 1]) / (xs[i] - xs[i - 1]) * (ys[i] - ys[i - 1]); return ys[ys.length - 1]; }
+const posOf = y => interp(y, KN.map(k => k[0]), KN.map(k => k[1]));
+const yearOf = p => interp(p, KN.map(k => k[1]), KN.map(k => k[0]));
+
+// ---------- rasters ----------
+const RAS = {};          // vp -> {fy: Uint16Array, b: Uint8Array, who: Uint16Array|null, fill: Uint8Array|null}
+function loadPNG(url) {
+  return new Promise((res, rej) => {
+    const im = new Image(); im.onload = () => {
+      const c = document.createElement("canvas"); c.width = im.width; c.height = im.height;
+      const x = c.getContext("2d", {willReadFrequently: true}); x.drawImage(im, 0, 0); res(x.getImageData(0, 0, im.width, im.height).data);
+    }; im.onerror = rej; im.src = url;
+  });
+}
+async function loadVP(vp) {
+  if (RAS[vp]) return RAS[vp];
+  const d = await loadPNG(`data/raster_${vp}_year.png`);
+  const n = RS * RS, fy = new Uint16Array(n), b = new Uint8Array(n);
+  for (let i = 0, j = 0; i < n; i++, j += 4) { fy[i] = (d[j] << 8) | d[j + 1]; b[i] = d[j + 2]; }
+  RAS[vp] = {fy, b, who: null, fill: null};
+  return RAS[vp];
+}
+async function loadWho(vp) {
+  const r = await loadVP(vp);
+  if (r.who) return r;
+  const d = await loadPNG(`data/raster_${vp}_who.png`);
+  const n = RS * RS; r.who = new Uint16Array(n); r.fill = new Uint8Array(n);
+  for (let i = 0, j = 0; i < n; i++, j += 4) { r.who[i] = (d[j] << 8) | d[j + 1]; r.fill[i] = d[j + 2]; }
+  return r;
+}
+
+// colour state of a pixel at year t for one viewpoint: 0 unknown, 1 known
+function knownPix(r, lostT, i, T) {
+  const f = r.fy[i]; if (f > T) return 0;
+  const li = r.b[i] >> 1; if (!li) return 1;
+  const L = lostT[li - 1]; const lo = L[0] + OFF, rg = L[1] == null ? 1e9 : L[1] + OFF;
+  return (T >= lo && T < rg) ? 0 : 1;
+}
+const hex = h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+const C_LAND = hex("#ece4d4"), C_SEA = hex("#4f7fae"), C_DARK = hex("#1b1b1b");
+const pack = c => (255 << 24) | (c[2] << 16) | (c[1] << 8) | c[0];
+const P_LAND = pack(C_LAND), P_SEA = pack(C_SEA), P_DARK = pack(C_DARK);
+const mix = (a, b, t) => a.map((v, k) => Math.round(v * (1 - t) + b[k] * t));
+const P_VP = {}; for (const v of VPS) { P_VP[v] = [pack(mix(C_LAND, hex(VPC[v]), .78)), pack(mix(C_SEA, hex(VPC[v]), .62))]; }
+
+const off = document.createElement("canvas"); off.width = RS; off.height = RS;
+const octx = off.getContext("2d");
+const img = octx.createImageData(RS, RS); const px = new Uint32Array(img.data.buffer);
+let EV = null;    // events for the current mode: {order: Uint32Array, start: Int32Array}
+function colourAt(i, T) {
+  if (cur.vp !== "all") {
+    const k = K(cur.vp), r = RAS[k]; return knownPix(r, SITE.lost[k], i, T) ? ((r.b[i] & 1) ? P_LAND : P_SEA) : P_DARK;
+  }
+  let best = null, by = 1e9;
+  for (const v of VPS) { const r = RAS[K(v)]; if (r && knownPix(r, SITE.lost[K(v)], i, T) && r.fy[i] < by) { by = r.fy[i]; best = v; } }
+  if (!best) return P_DARK;
+  return P_VP[best][(RAS.europe.b[i] & 1) ? 0 : 1];
+}
+function buildEvents() {
+  const vps = (cur.vp === "all" ? VPS : [cur.vp]).map(K), NB = 4600, cnt = new Int32Array(NB + 1);
+  const add = (cb) => { for (const v of vps) { const r = RAS[v], L = SITE.lost[v]; for (let i = 0; i < RS * RS; i++) { const f = r.fy[i]; if (f < NEVERV) { cb(f, i); const li = r.b[i] >> 1; if (li) { const q = L[li - 1]; cb(q[0] + OFF, i); if (q[1] != null) cb(q[1] + OFF, i); } } } } };
+  add((t, i) => cnt[Math.min(t, NB)]++);
+  const start = new Int32Array(NB + 2); for (let t = 0; t <= NB; t++) start[t + 1] = start[t] + cnt[t];
+  const fillp = start.slice(0, NB + 1), order = new Uint32Array(start[NB + 1]);
+  add((t, i) => { order[fillp[Math.min(t, NB)]++] = i; });
+  EV = {order, start, NB};
+}
+let curT = null;
+function paintAll(T) {
+  for (let i = 0; i < RS * RS; i++) px[i] = colourAt(i, T);
+  octx.putImageData(img, 0, 0); curT = T;
+}
+function paintTo(T) {
+  if (curT == null) return paintAll(T);
+  if (T === curT) return;
+  const a = Math.max(0, Math.min(T, curT) + 1), b = Math.min(EV.NB, Math.max(T, curT));
+  let x0 = RS, y0 = RS, x1 = -1, y1 = -1;
+  for (let t = a; t <= b; t++) for (let k = EV.start[t]; k < EV.start[t + 1]; k++) {
+    const i = EV.order[k]; px[i] = colourAt(i, T);
+    const x = i % RS, y = (i / RS) | 0; if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y;
+  }
+  if (x1 >= 0) octx.putImageData(img, 0, 0, x0, y0, x1 - x0 + 1, y1 - y0 + 1);
+  curT = T;
+}
+
+// ---------- map ----------
+const map = L.map("map", {minZoom: .5, maxZoom: 7, zoomSnap: .25, worldCopyJump: false, attributionControl: true, zoomControl: true});
+const fitZ = () => Math.max(.5, Math.floor(4 * Math.log2(document.getElementById("map").clientWidth / 256 * 1.05)) / 4);
+map.setView([22, 15], fitZ());
+map.createPane("ghost").style.zIndex = 420; map.createPane("plabels").style.zIndex = 650;
+const ESRI = "https://server.arcgisonline.com/ArcGIS/rest/services/";
+const baseTiles = L.tileLayer(ESRI + "World_Shaded_Relief/MapServer/tile/{z}/{y}/{x}", {maxZoom: 7, maxNativeZoom: 13, attribution: "Relief © Esri"});
+const LY = {base: false, dark: 100, coast: false, borders: false, names: false, routes: true, trails: true, labels: true, grid: false};
+const Stage = L.Canvas.extend({
+  options: {padding: .2},
+  _update() { L.Canvas.prototype._update.call(this); this.drawAll(); },
+  drawAll() {
+    const ctx = this._ctx, b = this._bounds; if (!ctx || !b) return;
+    const m = L.Browser.retina ? 2 : 1;
+    ctx.save(); ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, this._container.width, this._container.height); ctx.restore();
+    if (!SITE) return;
+    const z = map.getZoom(), W = 256 * Math.pow(2, z), org = map.getPixelOrigin();
+    const tl = map.project([MERC, -180], z).subtract(org);
+    ctx.save(); ctx.imageSmoothingEnabled = z < 3.5; ctx.globalAlpha = LY.base ? LY.dark / 100 : 1;
+    for (let k = -1; k <= 1; k++) {
+      const x = tl.x + k * W; if (x > b.max.x || x + W < b.min.x) continue;
+      ctx.drawImage(off, x, tl.y, W, W);
+    }
+    ctx.restore();
+    drawRoutes(ctx, z, W, org, b);
+  }
+});
+const stage = new Stage({pane: "overlayPane"}); stage.addTo(map);
+const ghostR = L.canvas({pane: "ghost", padding: .2});
+let coastL = null, bordersL = null, namesL = null, gridL = null;
+
+// ---------- routes and labels ----------
+let HIT = [];
+function journeysNow() { return cur.vp === "all" ? Jn : Jn.filter(j => j.v === cur.vp); }
+function activeWin(j) { return posOf(cur.year) <= posOf(j.e) + .013; }
+function drawRoutes(ctx, z, W, org, b) {
+  HIT = [];
+  if (!LY.routes) return;
+  const t = cur.year, pos = posOf(t), labs = [], boxes = [];
+  ctx.save(); ctx.lineJoin = "round"; ctx.lineCap = "round";
+  const scale = W / 360;
+  for (const j of journeysNow()) {
+    if (j.s > t || j.m === "base" || j.m === "survey") continue;
+    const active = activeWin(j);
+    if (!active && !LY.trails) continue;
+    const p = j.p, pts = [];
+    for (let i = 0; i < p.length; i += 3) {
+      if (p[i + 2] > t) { if (i > 0 && p[i - 1] < p[i + 2]) { const f = (t - p[i - 1]) / (p[i + 2] - p[i - 1]); pts.push([p[i - 3] + f * (p[i] - p[i - 3]), p[i - 2] + f * (p[i + 1] - p[i - 2])]); } break; }
+      pts.push([p[i], p[i + 1]]);
+    }
+    if (!pts.length) continue;
+    const col = cur.vp === "all" ? VPC[j.v] : CENT[((Math.floor(j.s / 100) % 7) + 7) % 7];
+    for (let k = -1; k <= 1; k++) {
+      const sp = pts.map(q => { const pp = map.project([q[1], q[0]], z); return [pp.x - org.x + k * W, pp.y - org.y]; });
+      const xs = sp.map(q => q[0]); if (Math.max(...xs) < b.min.x - 50 || Math.min(...xs) > b.max.x + 50) continue;
+      ctx.beginPath(); sp.forEach((q, i) => i ? ctx.lineTo(q[0], q[1]) : ctx.moveTo(q[0], q[1]));
+      if (sp.length === 1) ctx.arc(sp[0][0], sp[0][1], 2, 0, 7);
+      ctx.strokeStyle = col; ctx.globalAlpha = active ? 1 : .32; ctx.lineWidth = active ? 2.2 : 1; ctx.stroke();
+      HIT.push({j, sp});
+      if (active && LY.labels) labs.push({j, x: sp[sp.length - 1][0], y: sp[sp.length - 1][1], col, a: Math.max(.25, Math.min(1, (posOf(j.e) + .013 - pos) / .006))});
+    }
+  }
+  if (LY.labels) {
+    labs.sort((a, b) => b.j.a - a.j.a);
+    ctx.font = "600 12px 'IBM Plex Mono', monospace"; ctx.textBaseline = "middle";
+    for (const l of labs.slice(0, 60)) {
+      const w = ctx.measureText(l.j.l).width + 8, bx = [l.x + 6, l.y - 9, l.x + 6 + w, l.y + 9];
+      if (boxes.some(o => !(bx[2] < o[0] || bx[0] > o[2] || bx[3] < o[1] || bx[1] > o[3]))) continue;
+      boxes.push(bx);
+      ctx.globalAlpha = l.a; ctx.fillStyle = "rgba(10,10,10,.72)"; ctx.fillRect(bx[0], bx[1], w, 18);
+      ctx.fillStyle = l.col; ctx.fillRect(bx[0], bx[1], 3, 18);
+      ctx.fillStyle = "#fff"; ctx.fillText(l.j.l, bx[0] + 6, l.y);
+      ctx.beginPath(); ctx.arc(l.x, l.y, 3, 0, 7); ctx.fill();
+    }
+  }
+  ctx.restore();
+}
+
+// ---------- year, HUD ----------
+function setPos(p, fromSlider, exact) {
+  cur.pos = Math.max(0, Math.min(1, p)); cur.year = exact != null ? exact : Math.round(yearOf(cur.pos)); if (cur.year === 0) cur.year = 1;
+  if (!fromSlider) $("#slider").value = Math.round(cur.pos * 1000);
+  $("#year").innerHTML = yrBig(cur.year);
+  const s = SITE.series[cur.vp === "all" ? (cur.surv ? "all" : "all_j") : K(cur.vp)], i = Math.max(0, Math.min(s.land.length - 1, cur.year - SITE.y0));
+  const lp = s.land[i] / 100, sp = s.surface[i] / 100;
+  $("#fl").style.width = lp + "%"; $("#fs").style.width = sp + "%";
+  $("#pl").textContent = lp.toFixed(lp < 10 ? 1 : 0) + "%"; $("#ps").textContent = sp.toFixed(sp < 10 ? 1 : 0) + "%";
+  paintTo(cur.year + OFF); stage.drawAll(); showMoment();
+}
+function showMoment() {
+  const M = SITE.moments.filter(m => (m.v === cur.vp || cur.vp === "all") && m.y <= cur.year);
+  const m = M[M.length - 1];
+  $("#moment").innerHTML = m ? `<b>${esc(yr(m.y))} · ${esc(m.t)}.</b> ${esc(m.x)}` : (cur.vp === "polynesia" || cur.vp === "all" ? "" : `Nothing recorded yet for ${esc(VPN[cur.vp])}. Press play.`);
+}
+function frame(ts) {
+  if (!playing) return;
+  const dt = Math.min(.1, (ts - (lastT || ts)) / 1000); lastT = ts;
+  let p = cur.pos + dt * speed / 90;
+  if (p >= 1) { p = 1; togglePlay(false); }
+  setPos(p); requestAnimationFrame(frame);
+}
+function togglePlay(on) {
+  playing = on == null ? !playing : on; $("#play").innerHTML = playing ? "&#10073;&#10073;" : "&#9654;"; $("#play").setAttribute("aria-label", playing ? "Pause" : "Play");
+  if (playing) { if (cur.pos >= 1) setPos(0); lastT = 0; requestAnimationFrame(frame); }
+}
+async function setVP(vp) {
+  togglePlay(false);
+  $("#loading").hidden = false; $("#loading").textContent = "Loading...";
+  if (vp === "all") await Promise.all(VPS.map(v => loadVP(K(v)))); else await loadVP(K(vp));
+  cur.vp = vp; buildEvents(); curT = null;
+  document.querySelectorAll("#vpRow .cbtn").forEach(b => b.setAttribute("aria-pressed", b.dataset.v === vp));
+  $("#title").firstChild.textContent = vp === "all" ? "Four points of view compared" : `The world as recorded for ${VPN[vp]}`;
+  $("#subtitle").textContent = {europe: "Land and sea within reach of written accounts that reached European readers", islamic: "Arabic, Persian and Ottoman geographers and travellers", china: "Chinese envoys, pilgrims, fleets and geographers", polynesia: "Austronesian and Polynesian voyaging, dated by archaeology, not writing", all: "Each lit cell coloured by the tradition that recorded it first"}[vp];
+  legend(); $("#loading").hidden = true;
+  setPos(cur.pos);
+}
+function legend() {
+  const L = cur.vp === "all" ? VPS.map(v => `<span><i style="background:${VPC[v]}"></i>${VPS_[v]}</span>`).join("") :
+    `<span><i style="background:#ece4d4"></i>Land known</span><span><i style="background:#4f7fae"></i>Sea known</span><span><i style="background:#1b1b1b"></i>Not yet recorded</span><span><i class="ln" style="border-color:#ffb347"></i>Routes, coloured by century</span>`;
+  $("#legend").innerHTML = L;
+}
+
+// ---------- clicks ----------
+function pixOf(ll) {
+  let lon = ((ll.lng + 180) % 360 + 360) % 360 - 180, lat = Math.max(-MERC, Math.min(MERC, ll.lat));
+  const x = (lon + 180) / 360 * RS, yy = Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360));
+  const y = (1 - yy / Math.PI) / 2 * RS;
+  return Math.min(RS - 1, Math.floor(y)) * RS + Math.min(RS - 1, Math.floor(x));
+}
+function flag(st) { const s = STATUS[st] || STATUS.unsourced; return `<span class="flag ${s[0]}">${s[1]}</span>`; }
+function jPopup(j) {
+  const src = (j.src || []).map((u, k) => `<a href="${esc(u)}" target="_blank" rel="noopener">${k ? "more" : "source"}</a>`).join(" · ");
+  return `<p class="pt">${esc(j.n)}</p><p class="ps">${esc(yr(j.s))}${j.e !== j.s ? " to " + esc(yr(j.e)) : ""} · ${esc(j.sp || "")} · ${esc(j.m === "survey" ? "survey and settlement layer" : j.m)}${j.c === "low" ? " · route uncertain" : ""}</p>` +
+    `<p>${esc(j.sum)}</p>${j.g ? `<p><b>Guides:</b> ${esc(j.g)}</p>` : ""}${j.lost ? `<p>Knowledge lost to ${esc(VPN[j.v])} by ${esc(yr(j.lost))}.</p>` : ""}` +
+    `<p>First lit: ${mkm(j.a)} million km² · ${flag(j.st)}</p><p>${src}</p>`;
+}
+function nearRoute(cp) {
+  let best = null, bd = 7;
+  const dseg = (p, a, b) => { const dx = b[0] - a[0], dy = b[1] - a[1], l = dx * dx + dy * dy; let t = l ? ((p.x - a[0]) * dx + (p.y - a[1]) * dy) / l : 0; t = Math.max(0, Math.min(1, t)); return Math.hypot(p.x - a[0] - t * dx, p.y - a[1] - t * dy); };
+  const lp = map.containerPointToLayerPoint(cp);
+  for (const h of HIT) for (let i = 0; i < h.sp.length; i++) { const d = dseg(lp, h.sp[i], h.sp[Math.min(i + 1, h.sp.length - 1)]); if (d < bd) { bd = d; best = h.j; } }
+  return best;
+}
+async function cellInfo(ll, title) {
+  const i = pixOf(ll); const rows = [];
+  const vps = VPS;
+  for (const v of vps) {
+    const r = await loadWho(K(v)); const f = r.fy[i];
+    if (f >= NEVERV) { rows.push(`<tr><td><span class="vpdot" style="background:${VPC[v]}"></span>${VPS_[v]}</td><td>not recorded by 1960</td></tr>`); continue; }
+    const j = Jn[r.who[i] - 1];
+    rows.push(`<tr><td><span class="vpdot" style="background:${VPC[v]}"></span>${VPS_[v]}</td><td><b>${esc(yr(f - OFF))}</b>${j ? `, ${r.fill[i] ? "enclosed by journeys up to " : ""}<a href="#" data-j="${j.id}">${esc(j.n)}</a> ${flag(j.st)}` : ""}</td></tr>`);
+  }
+  const r0 = RAS[K(cur.vp === "all" ? "europe" : cur.vp)], f0 = r0.fy[i], j0 = r0.who ? Jn[r0.who[i] - 1] : null;
+  const later = f0 - OFF > cur.year ? `Not yet recorded for ${VPN[cur.vp]} in ${esc(yr(cur.year))}. ` : "";
+  const head = cur.vp === "all" ? "" : (f0 < NEVERV && j0 ? `${later}First recorded for ${VPN[cur.vp]} by ${esc(j0.n)}, ${esc(yr(f0 - OFF))}` : `Not recorded for ${VPN[cur.vp]} by 1960`);
+  $("#side").innerHTML = `<div class="big">${esc(title || (ll.lat.toFixed(1) + "°, " + (((ll.lng + 180) % 360 + 360) % 360 - 180).toFixed(1) + "°"))}</div>${head ? `<div class="sub">${head}</div>` : ""}<table>${rows.join("")}</table><div class="sub">Dark does not mean unknown to the people who lived there. Years are when a journey in the gazetteer passed within reach.</div>`;
+  $("#side").querySelectorAll("a[data-j]").forEach(a => a.onclick = ev => { ev.preventDefault(); showJourney(a.dataset.j); });
+  return head;
+}
+map.on("click", async ev => {
+  const j = nearRoute(ev.containerPoint);
+  if (j) { L.popup({maxWidth: 300}).setLatLng(ev.latlng).setContent(jPopup(j)).openOn(map); return; }
+  const head = await cellInfo(ev.latlng);
+  if (head) L.popup({maxWidth: 260}).setLatLng(ev.latlng).setContent(`<p>${head}.</p>`).openOn(map);
+});
+async function showJourney(id) {
+  const j = Jn.find(x => x.id === id); if (!j) return;
+  if (cur.vp !== j.v && cur.vp !== "all") await setVP(j.v);
+  setPos(posOf(Math.min(j.e, 1960)), false, Math.min(j.e, 1960));
+  const ll = []; for (let i = 0; i < j.p.length; i += 3) ll.push([j.p[i + 1], j.p[i]]);
+  map.fitBounds(L.latLngBounds(ll).pad(.3), {maxZoom: 5});
+  const mid = ll[Math.floor(ll.length / 2)];
+  setTimeout(() => L.popup({maxWidth: 300}).setLatLng(mid).setContent(jPopup(j)).openOn(map), 350);
+  $("#stage").scrollIntoView({behavior: "smooth", block: "start"});
+}
+
+// ---------- layers panel ----------
+function layersPanel() {
+  const w = L.DomUtil.create("div", "lyrWrap"); L.DomEvent.disableClickPropagation(w); L.DomEvent.disableScrollPropagation(w);
+  w.innerHTML = `<button class="lyrBtn" aria-expanded="false">Map layers</button><div class="lyrPanel" hidden>
+  <div class="hd">Underneath</div>
+  <div class="r"><label><input type="checkbox" data-l="base"> Relief base map</label><div class="sub">Show the land underneath the dark</div></div>
+  <div class="r"><label>Darkness</label><input type="range" min="30" max="100" value="100" data-l="dark" aria-label="Opacity of the lit and dark layer"></div>
+  <div class="r"><label><input type="checkbox" data-l="coast"> Modern coastlines</label></div>
+  <div class="hd">Orientation</div>
+  <div class="r"><label><input type="checkbox" data-l="borders"> Modern borders</label></div>
+  <div class="r"><label><input type="checkbox" data-l="names"> Place names</label></div>
+  <div class="r"><label><input type="checkbox" data-l="grid"> Analysis grid</label><div class="sub">H3 hexagons, zoom in to see them</div></div>
+  <div class="hd">Journeys</div>
+  <div class="r"><label><input type="checkbox" data-l="routes" checked> Routes</label></div>
+  <div class="r"><label><input type="checkbox" data-l="trails" checked> Earlier routes, faint</label></div>
+  <div class="r"><label><input type="checkbox" data-l="labels" checked> Leader labels</label></div></div>`;
+  $("#map").appendChild(w);
+  const btn = w.querySelector(".lyrBtn"), pan = w.querySelector(".lyrPanel");
+  btn.onclick = () => { const o = pan.hidden; pan.hidden = !o; btn.setAttribute("aria-expanded", o); };
+  w.querySelectorAll("input").forEach(inp => inp.addEventListener("input", () => { const k = inp.dataset.l; LY[k] = inp.type === "checkbox" ? inp.checked : +inp.value; applyLayers(k); }));
+}
+async function lines(url) { const r = await fetch(url); const d = await r.json(); return d.map(a => { const o = []; for (let i = 0; i < a.length; i += 2) o.push([a[i + 1], a[i]]); return o; }); }
+async function applyLayers(k) {
+  if (k === "base") LY.base ? baseTiles.addTo(map) : map.removeLayer(baseTiles);
+  if (k === "coast") { if (LY.coast) { coastL = coastL || L.polyline(await lines("data/coast.json"), {renderer: ghostR, color: "#9a9a9a", weight: .7, opacity: .7, interactive: false}); coastL.addTo(map); } else if (coastL) map.removeLayer(coastL); }
+  if (k === "borders") { if (LY.borders) { bordersL = bordersL || L.polyline(await lines("data/borders.json"), {renderer: ghostR, color: "#c25b4a", weight: .8, opacity: .8, interactive: false}); bordersL.addTo(map); } else if (bordersL) map.removeLayer(bordersL); }
+  if (k === "names") { if (LY.names) { namesL = namesL || L.layerGroup(SITE.labels.map(p => L.tooltip({permanent: true, direction: "right", className: "plabel", pane: "plabels", offset: [2, 0]}).setLatLng([p[2], p[1]]).setContent(esc(p[0])))); namesL.addTo(map); } else if (namesL) map.removeLayer(namesL); }
+  if (k === "grid") drawGrid();
+  stage.drawAll();
+}
+let h3lib = null;
+async function drawGrid() {
+  if (gridL) { map.removeLayer(gridL); gridL = null; }
+  if (!LY.grid) return;
+  if (map.getZoom() < 4.5) { gridL = L.layerGroup().addTo(map); return; }
+  if (!h3lib) await new Promise((res, rej) => { const s = document.createElement("script"); s.src = "https://cdn.jsdelivr.net/npm/h3-js@4.1.0/dist/h3-js.umd.js"; s.onload = () => { h3lib = window.h3; res(); }; s.onerror = rej; document.head.appendChild(s); });
+  const b = map.getBounds(), w = Math.max(-180, b.getWest()), e = Math.min(180, b.getEast());
+  const cells = h3lib.polygonToCells([[b.getSouth(), w], [b.getSouth(), e], [b.getNorth(), e], [b.getNorth(), w]], 4).slice(0, 6000);
+  gridL = L.polyline(cells.map(c => { const r = h3lib.cellToBoundary(c); r.push(r[0]); return r; }), {renderer: ghostR, color: "#888", weight: .5, opacity: .6, interactive: false}).addTo(map);
+}
+map.on("moveend", () => { if (LY.grid) drawGrid(); });
+
+// ---------- search ----------
+function setupSearch() {
+  const q = $("#q"), sug = $("#sug"); let hits = [], sel = -1;
+  const P = SITE.places.map(p => ({p, k: p[0].normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase()}));
+  const render = () => { sug.innerHTML = hits.map((h, k) => `<li role="option" aria-selected="${k === sel}" data-k="${k}">${esc(h.p[0])} <span>${h.p[1] === "country" ? "country" : esc(h.p[1])}</span></li>`).join(""); sug.style.display = hits.length ? "block" : "none"; };
+  q.addEventListener("input", () => { const s = q.value.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().trim(); sel = -1; hits = s.length < 2 ? [] : P.filter(x => x.k.startsWith(s)).concat(P.filter(x => !x.k.startsWith(s) && x.k.includes(s))).slice(0, 8); render(); });
+  const go = h => { sug.style.display = "none"; q.value = h.p[0]; const ll = L.latLng(h.p[3], h.p[2]); map.setView(ll, Math.max(map.getZoom(), h.p[1] === "country" ? 3.5 : 4.5)); cellInfo(ll, h.p[0] + (h.p[1] === "country" ? "" : ", " + h.p[1])).then(head => { if (head) L.popup({maxWidth: 260}).setLatLng(ll).setContent(`<p><b>${esc(h.p[0])}</b><br>${head}.</p>`).openOn(map); }); };
+  q.addEventListener("keydown", e => { if (e.key === "ArrowDown") { sel = Math.min(hits.length - 1, sel + 1); render(); e.preventDefault(); } else if (e.key === "ArrowUp") { sel = Math.max(0, sel - 1); render(); e.preventDefault(); } else if (e.key === "Enter" && hits.length) { go(hits[Math.max(0, sel)]); e.preventDefault(); } else if (e.key === "Escape") { sug.style.display = "none"; } });
+  sug.addEventListener("click", e => { const li = e.target.closest("li"); if (li) go(hits[+li.dataset.k]); });
+  document.addEventListener("click", e => { if (!e.target.closest(".searchbox")) sug.style.display = "none"; });
+}
+
+// ---------- charts ----------
+const tip = $("#tip");
+function showTip(ev, html) { tip.innerHTML = html; tip.style.display = "block"; const r = document.body.getBoundingClientRect(); tip.style.left = (ev.clientX - r.left) + "px"; tip.style.top = (ev.clientY - r.top) + "px"; }
+const hideTip = () => tip.style.display = "none";
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+function curve() {
+  const el = $("#curve"), W = 700, H = 330, m = {l: 44, r: 14, t: 12, b: 34};
+  const X = y => m.l + posOf(y) * (W - m.l - m.r), Y = v => H - m.b - v / 90 * (H - m.t - m.b);
+  const cols = {europe: css("--eu"), islamic: css("--is"), china: css("--ch"), polynesia: css("--po")};
+  const LINES = [["europe", "land", "europe", 2.6, ""], ["europe_j", "land", "europe", 1.6, "5 4"], ["islamic", "land", "islamic", 2, ""], ["china", "land", "china", 2, ""], ["polynesia", "surface", "polynesia", 2, ""]];
+  const NM = {europe: "Europe, land", europe_j: "Europe, journeys only", islamic: "Islamic world, land", china: "China, land", polynesia: "Polynesia, sea and land"};
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Line chart of the share of the world known to each tradition by year">`;
+  for (let v = 0; v <= 80; v += 20) s += `<line x1="${m.l}" x2="${W - m.r}" y1="${Y(v)}" y2="${Y(v)}" stroke="${css("--rule")}"/><text class="lab" x="${m.l - 6}" y="${Y(v) + 4}" text-anchor="end" font-size="11" style="fill:${css("--muted")}">${v}%</text>`;
+  for (const y of [-2000, -1000, 1, 1000, 1400, 1500, 1600, 1700, 1800, 1900, 1960]) s += `<line x1="${X(y)}" x2="${X(y)}" y1="${H - m.b}" y2="${H - m.b + 4}" stroke="${css("--muted")}"/><text x="${X(y)}" y="${H - m.b + 17}" text-anchor="middle" font-size="${y < 1400 ? 9.5 : 10.5}" style="fill:${css("--muted")}">${y < 0 ? (-y) + " BC" : y === 1 ? "AD 1" : y}</text>`;
+  for (const [k, f, c, w, d] of LINES) {
+    const a = SITE.series[k][f]; let p = "";
+    for (let y = SITE.y0; y <= SITE.y1; y += (y < 1400 ? 10 : 2)) p += (p ? "L" : "M") + X(y).toFixed(1) + "," + Y(a[y - SITE.y0] / 100).toFixed(1);
+    s += `<path d="${p}" fill="none" stroke="${cols[c]}" stroke-width="${w}" ${d ? `stroke-dasharray="${d}"` : ""}/>`;
+  }
+  s += `<line id="cv" y1="${m.t}" y2="${H - m.b}" stroke="${css("--fg")}" stroke-dasharray="3 3" opacity="0"/><rect x="${m.l}" y="${m.t}" width="${W - m.l - m.r}" height="${H - m.t - m.b}" fill="transparent" id="cvr"/></svg>`;
+  el.innerHTML = s;
+  $("#curveLegend").innerHTML = LINES.map(([k, f, c, w, d]) => `<span><i class="ln" style="border-color:${cols[c]};${d ? "border-top-style:dashed" : ""}"></i>${NM[k]}</span>`).join("");
+  const svg = el.querySelector("svg");
+  el.querySelector("#cvr").addEventListener("mousemove", ev => {
+    const r = svg.getBoundingClientRect(), x = (ev.clientX - r.left) / r.width * W; const y = Math.round(yearOf((x - m.l) / (W - m.l - m.r)));
+    const ln = el.querySelector("#cv"); ln.setAttribute("x1", X(y)); ln.setAttribute("x2", X(y)); ln.setAttribute("opacity", 1);
+    showTip(ev, `<b>${yr(y)}</b><br>` + LINES.map(([k, f]) => `${NM[k]}: ${(SITE.series[k][f][y - SITE.y0] / 100).toFixed(1)}%`).join("<br>"));
+  });
+  el.querySelector("#cvr").addEventListener("mouseleave", () => { hideTip(); el.querySelector("#cv").setAttribute("opacity", 0); });
+}
+function beforeChart() {
+  const B = R.before_europe, vs = ["islamic", "china", "polynesia"], W = 700, H = 150, m = {l: 120, r: 70};
+  const mx = Math.max(...vs.map(v => B[v].km2)) / 1e6;
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Bar chart of area known to other traditions before Europe">`;
+  vs.forEach((v, k) => {
+    const y = 10 + k * 45, wl = B[v].land_km2 / 1e6 / mx * (W - m.l - m.r), ws = B[v].sea_km2 / 1e6 / mx * (W - m.l - m.r);
+    const c = css({islamic: "--is", china: "--ch", polynesia: "--po"}[v]);
+    s += `<text x="${m.l - 8}" y="${y + 17}" text-anchor="end" font-size="12">${VPS_[v]}</text><rect x="${m.l}" y="${y}" width="${wl}" height="26" fill="${c}"/><rect x="${m.l + wl}" y="${y}" width="${ws}" height="26" fill="${c}" opacity=".45"/><text x="${m.l + wl + ws + 6}" y="${y + 17}" font-size="12">${mkm(B[v].km2)}</text>`;
+  });
+  s += `</svg>`; $("#beforeChart").innerHTML = s + `<div class="legend"><span><i style="background:var(--fg)"></i>Land</span><span><i style="background:var(--fg);opacity:.45"></i>Sea</span></div>`;
+}
+function tables() {
+  const rows = R.biggest.all.map(r => [r, "all"]).concat(R.biggest.land.map(r => [r, "land"]));
+  $("#bigTable").innerHTML = `<tr><th>Journey</th><th class="r">Years</th><th class="r">New area, M km²</th><th class="r">of it land</th></tr>` +
+    rows.filter((x, k, a) => a.findIndex(y => y[0].id === x[0].id) === k).sort((a, b) => b[0].new_km2 - a[0].new_km2).map(([r]) => `<tr data-j="${r.id}"><td>${esc(r.leader)}</td><td class="r">${esc(yr(r.start))}${r.end !== r.start ? " to " + esc(yr(r.end)) : ""}</td><td class="r">${mkm(r.new_km2)}</td><td class="r">${mkm(r.new_land_km2)}</td></tr>`).join("");
+  $("#bigTable").querySelectorAll("tr[data-j]").forEach(tr => tr.onclick = () => showJourney(tr.dataset.j));
+  const N = {main: "Main run (journeys plus surveys)", journeys_only: "Journeys only", radius_half: "Radii halved", radius_1p5: "Radii x 1.5", no_fill: "No pocket fill", fill_25: "Fill up to 25 cells", fill_400: "Fill up to 400 cells", confirmed_only: "Confirmed entries only", no_base: "No starting worlds"};
+  $("#sensTable").innerHTML = `<tr><th>Variant</th><th class="r">1492</th><th class="r">1800</th><th class="r">1900</th><th class="r">1960</th><th class="r">25% by</th><th class="r">50% by</th></tr>` +
+    Object.entries(R.sensitivity).map(([k, v]) => `<tr><td>${N[k]}</td><td class="r">${v.land["1492"]}%</td><td class="r">${v.land["1800"]}%</td><td class="r">${v.land["1900"]}%</td><td class="r">${v.land["1960"]}%</td><td class="r">${v.milestones["25"] == null ? "not reached" : yr(v.milestones["25"])}</td><td class="r">${v.milestones["50"] == null ? "not reached" : yr(v.milestones["50"])}</td></tr>`).join("");
+}
+
+// ---------- start ----------
+(async function () {
+  try {
+    SITE = await (await fetch("data/site.json")).json();
+  } catch (e) { $("#loading").textContent = "Could not load the map data."; return; }
+  KN = SITE.knots; Jn = SITE.journeys;
+  $("#vpRow").innerHTML = VPS.concat(["all"]).map(v => `<button class="cbtn" data-v="${v}" aria-pressed="false">${v !== "all" ? `<span class="vpdot" style="background:${VPC[v]}"></span>` : ""}${VPS_[v]}</button>`).join("");
+  $("#vpRow").querySelectorAll(".cbtn").forEach(b => b.onclick = () => setVP(b.dataset.v));
+  $("#layerRow").querySelectorAll(".cbtn").forEach(b => b.onclick = () => { cur.surv = b.dataset.s === "1"; $("#layerRow").querySelectorAll(".cbtn").forEach(x => x.setAttribute("aria-pressed", x === b)); setVP(cur.vp); });
+  $("#momRow").innerHTML = SITE.moments.map((m, k) => `<button class="cbtn" data-k="${k}">${esc(yr(m.y))} ${esc(m.t)}</button>`).join("");
+  $("#momRow").querySelectorAll(".cbtn").forEach(b => b.onclick = async () => { const m = SITE.moments[+b.dataset.k]; if (cur.vp !== m.v && cur.vp !== "all") await setVP(m.v); setPos(posOf(m.y), false, m.y); });
+  $("#slider").addEventListener("input", e => { togglePlay(false); setPos(+e.target.value / 1000, true); });
+  $("#play").onclick = () => togglePlay();
+  const SP = [.5, 1, 2, 4]; $("#speed").onclick = () => { speed = SP[(SP.indexOf(speed) + 1) % SP.length]; $("#speed").textContent = speed + "×"; };
+  layersPanel(); setupSearch(); curve(); beforeChart(); tables();
+  cur.pos = posOf(1400);
+  await setVP("europe");
+  loadWho("europe"); loadVP("europe_j");
+})();
+$("#theme").onclick = () => { const r = document.documentElement, d = r.getAttribute("data-theme") === "dark" || (!r.getAttribute("data-theme") && matchMedia("(prefers-color-scheme: dark)").matches); r.setAttribute("data-theme", d ? "light" : "dark"); if (SITE) { curve(); beforeChart(); } };
+</script>
+/*FULLSCREEN*/
+</body>
+</html>
