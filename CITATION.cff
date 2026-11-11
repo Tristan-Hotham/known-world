@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+message: "If you use this data or code, please cite it as below."
+title: "The Known World: How Much of the Earth Each Tradition Had Written About, from the Bronze Age to 1960"
+type: dataset
+authors:
+  - family-names: Hotham
+    given-names: Tristan
+    orcid: "https://orcid.org/0000-0003-4931-9349"
+    affiliation: "Independent researcher"
+doi: "10.5281/zenodo.23897793"
+url: "https://maps.tristanhotham.com/known-world/"
+repository-code: "https://github.com/Tristan-Hotham/known-world"
+license: CC-BY-4.0
+keywords:
+  - "history of exploration"
+  - "historical geography"
+  - "travel accounts"
+  - "Polynesian voyaging"
+  - "Islamic geography"
+  - "Chinese geography"
+  - "H3"
+  - "open data"
+  - "maps"
